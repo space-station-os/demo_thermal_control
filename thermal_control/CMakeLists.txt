@@ -49,9 +49,9 @@ install(DIRECTORY launch/
   DESTINATION share/${PROJECT_NAME}/launch
 )
 
-install(DIRECTORY config/
-  DESTINATION share/${PROJECT_NAME}/launch
-)
+# install(DIRECTORY config/
+#   DESTINATION share/${PROJECT_NAME}/launch
+# )
 
 if(BUILD_TESTING)
   find_package(ament_lint_auto REQUIRED)
