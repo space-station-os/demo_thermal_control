@@ -44,6 +44,7 @@ private:
 
         // Publish the temperature
         auto msg = sensor_msgs::msg::Temperature();
+        msg.header.stamp = this->get_clock()->now();
         msg.temperature = coldplate_temp_;
         msg.variance = 0.0;
         temperature_publisher_->publish(msg);
@@ -65,7 +66,7 @@ private:
     {
 
         //Check for server activation
-        if (!cooling_client_->wait_for_service(5s))
+        if (!cooling_client_->wait_for_service(std::chrono::seconds(5)))
         {
             RCLCPP_ERROR(this->get_logger(), "Cooling service not available.");
             return;
@@ -74,30 +75,77 @@ private:
         auto request = std::make_shared<thermal_control::srv::Cooling::Request>();
         request->temperature = coldplate_temp_;
 
-        auto result_future = cooling_client_->async_send_request(request);
-        try{
-            auto result =result_future.get();
-            if (result ->success){
-                double pre_temp = coldplate_temp_;
-                coldplate_temp_ = result -> reduced_temperature;
-                threshold_temp_ = coldplate_temp_;
-                if (threshold_temp_<=20){
-                    threshold_temp_ = 50;
-                }
-                RCLCPP_INFO(this->get_logger(),
-                                " %s coldplate temperature : %.2f deg C.",
-                                result->message.c_str(), coldplate_temp_);
-            }
-            else
-            {
-                RCLCPP_WARN(this->get_logger(), "Cooling process failed: %s", result->message.c_str());
-            }
+        auto result_future = cooling_client_->async_send_request(
+            request,
+            [this](rclcpp::Client<thermal_control::srv::Cooling>::SharedFuture future_response) {
+                try{
+                    auto result =future_response.get();
+                    if (result->success){
+                        // double pre_temp = coldplate_temp_;
+                        coldplate_temp_ = result->reduced_temperature;
+                        double water_temp_ = result->water_temperature;
+                        double ammonia_temp = result->ammonia_temperature;
+                        threshold_temp_ = coldplate_temp_;
+                        if (threshold_temp_<=30){
+                            threshold_temp_ = 50;
+                        }
+                        RCLCPP_INFO(this->get_logger(),
+                                " %s coldplate temperature : %.2f deg C. \nWater temperature : %.2f deg C. \nAmmonia temperature : %.2f deg C.",
+                                 result->message.c_str(), coldplate_temp_, water_temp_, ammonia_temp);
+                    }
+                    else
+                    {
+                        RCLCPP_WARN(this->get_logger(), "Cooling process failed: %s", result->message.c_str());
+                    }
 
-            }
-            catch (const std::exception &e)
-            {
-                RCLCPP_ERROR(this->get_logger(), "Service call failed");
-            }   
+                }
+                catch (const std::exception &e)
+                {
+                    RCLCPP_ERROR(this->get_logger(), "Service call failed");
+                }
+            });
+
+
+
+        // if (result_future.get() ->success){
+        //         double pre_temp = coldplate_temp_;
+        //         coldplate_temp_ = result_future.get() -> reduced_temperature;
+        //         threshold_temp_ = coldplate_temp_;
+        //         if (threshold_temp_<=20){
+        //             threshold_temp_ = 50;
+        //          }
+        //          RCLCPP_INFO(this->get_logger(),
+        //           " %s coldplate temperature : %.2f deg C." , coldplate_temp_);
+        // }
+        // else{
+        //     RCLCPP_WARN(this->get_logger(), "Cooling process failed: %s", result_future.get()->message.c_str());
+        // }
+
+
+
+        // try{
+        //     auto result =result_future.get();
+        //     if (result_future.get() ->success){
+        //         double pre_temp = coldplate_temp_;
+        //         coldplate_temp_ = result_future.get() -> reduced_temperature;
+        //         threshold_temp_ = coldplate_temp_;
+        //         if (threshold_temp_<=20){
+        //             threshold_temp_ = 50;
+        //         }
+        //         RCLCPP_INFO(this->get_logger(),
+        //                         " %s coldplate temperature : %.2f deg C.",
+        //                         result_future.get()->message.c_str(), coldplate_temp_);
+        //     }
+        //     else
+        //     {
+        //         RCLCPP_WARN(this->get_logger(), "Cooling process failed: %s", result->message.c_str());
+        //     }
+
+        //     }
+        //     catch (const std::exception &e)
+        //     {
+        //         RCLCPP_ERROR(this->get_logger(), "Service call failed");
+        //     }   
         }
     };   
     

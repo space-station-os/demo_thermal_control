@@ -1,5 +1,7 @@
-float64 temperature   # Current temperature of coldplate in deg celsius
+float64 temperature          # Current temperature of coldplate in deg celsius
 ---
-bool success        # Whether the cooling process succeeded
-string message      # A status message describing the result
-float64 reduced_temperature # The reduced temperature of coldpplate after cooling process is initiated
+bool success                 # Whether the cooling process succeeded
+string message               # A status message describing the result
+float64 reduced_temperature  # The reduced temperature of coldpplate after cooling process is initiated
+float64 water_temperature    # Internal coolant-water temperature
+float64 ammonia_temperature  # External coolant-Ammonia temperature 

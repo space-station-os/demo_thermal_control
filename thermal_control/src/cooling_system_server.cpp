@@ -1,108 +1,144 @@
 #include <rclcpp/rclcpp.hpp>
-#include <std_srvs/srv/set_bool.hpp>
-#include <std_msgs/msg/float32.hpp>
+#include "thermal_control/srv/cooling.hpp"
 #include <functional>
-#include <thread>
+#include <memory>
+#include <cmath>
 
-using namespace std::chrono_literals;
-
-class CoolingSystemNode : public rclcpp::Node {
+class CoolingSystemNode : public rclcpp::Node
+{
 public:
-    CoolingSystemNode() : Node("cooling_system_server"), pump1_active_(false), pump2_active_(false), T_coldplate_(26.0), T_water_(4.0), T_ammonia_(-45.0) {
+    CoolingSystemNode()
+        : Node("cooling_system_server"),
+          pump1_active_(false)
+          
+    {
         // Service Server
-        cooling_service_ = this->create_service<std_srvs::srv::SetBool>(
+        cooling_service_ = this->create_service<thermal_control::srv::Cooling>(
             "activate_cooling",
             std::bind(&CoolingSystemNode::handle_cooling_request, this, std::placeholders::_1, std::placeholders::_2));
-
-        // Temperature Publisher
-        temperature_publisher_ = this->create_publisher<std_msgs::msg::Float32>("coldplate_temperature", 10);
 
         RCLCPP_INFO(this->get_logger(), "Cooling System Node Initialized");
     }
 
 private:
     bool pump1_active_;
-    bool pump2_active_;
-    double T_coldplate_;
-    double T_water_;
-    double T_ammonia_;
+    
 
-    rclcpp::Publisher<std_msgs::msg::Float32>::SharedPtr temperature_publisher_;
-    rclcpp::Service<std_srvs::srv::SetBool>::SharedPtr cooling_service_;
+    rclcpp::Service<thermal_control::srv::Cooling>::SharedPtr cooling_service_;
 
-    void handle_cooling_request(const std_srvs::srv::SetBool::Request::SharedPtr request,
-                                std_srvs::srv::SetBool::Response::SharedPtr response) {
-        if (pump1_active_ || pump2_active_) {
+    void handle_cooling_request(const thermal_control::srv::Cooling::Request::SharedPtr request,
+                                 thermal_control::srv::Cooling::Response::SharedPtr response)
+    {
+        if (pump1_active_)
+        {
             response->success = false;
-            response->message = "Pumps are already active!";
+            response->message = "Cooling system is already active!";
             return;
         }
 
-        if (request->data) {
-            RCLCPP_INFO(this->get_logger(), "Activating pumps...");
-            pump1_active_ = activate_pump1();
-            pump2_active_ = activate_pump2();
+        double T_coldplate = request->temperature; // Get temperature from client
+        double target_temperature = 30.0;         // cooling target (e.g., 30°C)
+        double T_water = 4.0;
+        double T_ammonia = -40.0;
+        double T_env = -270.0; //Space temperature
 
-            if (!pump1_active_ || !pump2_active_) {
-                response->success = false;
-                response->message = "Failed to activate one or both pumps.";
-                return;
-            }
+        //CONSTANTS
+        const double c_p_plate = 900;       // Specific heat capacity of aluminum [J/kg*K]
+        const double mass_plate = 1;        // Mass of the plate [kg]
+        const double eta1 = 0.95;           // Efficiency of plate-water heat exchanger
+        const double eta2 = 0.95;           // Efficiency of water-ammonia heat exchanger
+        const double c_p_water = 4184;      // Specific heat capacity of water [J/kg*K]
+        const double c_p_ammonia = 4500;    // Specific heat capacity of ammonia [J/kg*K]
+        const double mass_water = 1;        // Mass of water [kg]
+        const double mass_ammonia = 1;      // Mass of ammonia [kg]
+        const double h_plate_water = 200;   // Heat transfer coefficient [W/m^2*K]
+        const double A_plate_water = 0.1;   // Contact area [m^2]
+        const double h_water_ammonia = 150; // Heat transfer coefficient [W/m^2*K]
+        const double A_water_ammonia = 0.1; // Contact area [m^2]
+        const double sigma = 5.67e-8;       // Stefan-Boltzmann constant [W/m^2*K^4]
+        const double epsilon = 0.9;         // Emissivity of radiator
+        const double A_radiator = 0.1;      // Radiator area [m^2]
 
-            response->success = true;
-            response->message = "Cooling system activated successfully.";
 
-            // Simulate cooling process
-            simulate_cooling();
-        } else {
+        RCLCPP_INFO(this->get_logger(), "Received cooling request: Current Temp = %.2f°C, Target Temp = %.2f°C",
+                    T_coldplate, target_temperature);
+
+        if (T_coldplate <= target_temperature)
+        {
             response->success = false;
-            response->message = "Cooling activation failed. Please check request.";
-        }
-    }
-
-    bool activate_pump1() {
-        RCLCPP_INFO(this->get_logger(), "Pump 1 activated (Water loop)");
-        return true;  // Simulate successful activation
-    }
-
-    bool activate_pump2() {
-        RCLCPP_INFO(this->get_logger(), "Pump 2 activated (Ammonia loop)");
-        return true;  // Simulate successful activation
-    }
-
-    void simulate_cooling() {
-        while (T_coldplate_ > 20.0) {
-            // Heat transfer from cold plate to water
-            double Q_coldplate = 0.1 * 4186 * (T_coldplate_ - T_water_);  // Water flow rate = 0.1 kg/s
-            T_coldplate_ -= Q_coldplate / (2.0 * 900);                    // Cold plate: mass = 2 kg, c = 900 J/kg°C
-            T_water_ += Q_coldplate / (0.1 * 4186);
-
-            // Heat transfer from water to ammonia
-            if (T_water_ >= 20.0) {
-                double Q_water = 0.05 * 4700 * (T_water_ - T_ammonia_);  // Ammonia flow rate = 0.05 kg/s
-                T_water_ -= Q_water / (0.1 * 4186);
-                T_ammonia_ += Q_water / (0.05 * 4700);
-            }
-
-            // Publish cold plate temperature
-            auto msg = std_msgs::msg::Float32();
-            msg.data = T_coldplate_;
-            temperature_publisher_->publish(msg);
-
-            RCLCPP_INFO(this->get_logger(), "Cooling: T_coldplate=%.2f°C, T_water=%.2f°C, T_ammonia=%.2f°C",
-                        T_coldplate_, T_water_, T_ammonia_);
-
-            std::this_thread::sleep_for(100ms);
+            response->message = "Cooling not required. Current temperature is already at or below the target.";
+            response->reduced_temperature = T_coldplate;
+            response->water_temperature = T_water;
+            response->ammonia_temperature = T_ammonia;
+            return;
         }
 
-        // Deactivate pumps only once temperature reaches 20°C or lower
+        pump1_active_ = true;
+
+        // Heat lost by plate to water
+        double Q_plate_water = eta1 * h_plate_water * A_plate_water * (T_coldplate - T_water);
+
+        // Update plate temperature
+        double delta_T_plate = Q_plate_water / (mass_plate * c_p_plate);
+        T_coldplate -= delta_T_plate;
+
+        // Heat gained by water
+        double delta_T_water = Q_plate_water / (mass_water * c_p_water);
+        T_water += delta_T_water;
+
+        // Heat transferred from water to ammonia
+        double Q_water_ammonia = eta2 * h_water_ammonia * A_water_ammonia * (T_water - T_ammonia);
+
+        // Update water temperature (net heat balance)
+        delta_T_water = Q_water_ammonia / (mass_water * c_p_water);
+        T_water -= delta_T_water;
+        // double Q_water_net = Q_plate_water - Q_water_ammonia; 
+        // T_water += Q_water_net / (mass_water * c_p_water);
+
+        //Heat gained by Ammonnia
+        double delta_T_ammonia = Q_water_ammonia / (mass_ammonia * c_p_ammonia);
+        T_ammonia += delta_T_ammonia;
+
+        //Heat transferred from Ammonia to envronment
+        double Q_ammonia_environment = epsilon * sigma * A_radiator * (pow(T_ammonia + 273.15, 4) - pow(T_env + 273.15, 4)) ;
+
+        // Update ammonia temperature
+        delta_T_ammonia = Q_ammonia_environment / (mass_ammonia * c_p_ammonia);
+        T_ammonia -= delta_T_ammonia;
+
+
+        // // T_coldplate = simulate_cooling(T_coldplate, target_temperature);
+        // const double cooling_rate = 0.1; // Rate of cooling proportional to temperature difference
+        // double temp_difference = T_coldplate - T_water_;
+        // T_coldplate -= cooling_rate * temp_difference;
+        response->reduced_temperature = T_coldplate;
+        response->water_temperature = T_water;
+        response->ammonia_temperature = T_ammonia;
+        response->success = true;
+        response->message = "Cooling completed successfully.";
         pump1_active_ = false;
-        pump2_active_ = false;
-        RCLCPP_INFO(this->get_logger(), "Operating temperature reached (T_coldplate=%.2f°C). Pumps deactivated.", T_coldplate_);
     }
+
+//     double simulate_cooling(double T_coldplate, double target_temperature)
+//     {
+//         const double cooling_rate = 0.1; // Rate of cooling proportional to temperature difference
+
+//         while (T_coldplate > target_temperature)
+//         {
+//             double temp_difference = T_coldplate - T_water_;
+//             T_coldplate -= cooling_rate * temp_difference;
+
+//             RCLCPP_INFO(this->get_logger(), "Cooling in progress: T_coldplate=%.2f°C", T_coldplate);
+//             rclcpp::sleep_for(std::chrono::milliseconds(500));
+//         }
+
+//         RCLCPP_INFO(this->get_logger(), "Target temperature reached: %.2f°C", T_coldplate);
+//         return T_coldplate;
+//     }
 };
 
-int main(int argc, char *argv[]) {
+int main(int argc, char *argv[])
+{
     rclcpp::init(argc, argv);
     rclcpp::spin(std::make_shared<CoolingSystemNode>());
     rclcpp::shutdown();
