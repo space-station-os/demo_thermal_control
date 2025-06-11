@@ -11,14 +11,18 @@ find_package(rclcpp REQUIRED)
 find_package(sensor_msgs REQUIRED)
 find_package(rosidl_default_generators REQUIRED)
 find_package(std_srvs REQUIRED)
+find_package(space_station_eclss REQUIRED)
 # uncomment the following section in order to fill in
 # further dependencies manually.
 # find_package(<dependency> REQUIRED)
 
-set(msg_files
-  "srv/Cooling.srv"
-  "msg/ATCS.msg"
 
+set(msg_files
+
+  "msg/TankStatus.msg"
+  "srv/CoolantFlow.srv"
+  "srv/InternalLoop.srv"
+  "msg/InternalLoopStatus.msg"
 )
 
 rosidl_generate_interfaces(${PROJECT_NAME}
@@ -27,22 +31,16 @@ rosidl_generate_interfaces(${PROJECT_NAME}
 )
 
 
+add_executable(coolant src/coolant.cpp)
+ament_target_dependencies(coolant rosidl_default_generators rclcpp sensor_msgs space_station_eclss)
+rosidl_target_interfaces(coolant ${PROJECT_NAME} "rosidl_typesupport_cpp")
+
 
 include_directories(include)
 
-add_executable(coldplate_system src/temp_publish_node.cpp)
-ament_target_dependencies(coldplate_system std_srvs rosidl_default_generators rclcpp sensor_msgs)
-
-rosidl_target_interfaces(coldplate_system ${PROJECT_NAME} "rosidl_typesupport_cpp")
-
-
-add_executable(cooling_process src/cooling_system_server.cpp)
-ament_target_dependencies(cooling_process std_srvs rosidl_default_generators rclcpp sensor_msgs)
-rosidl_target_interfaces(cooling_process ${PROJECT_NAME} "rosidl_typesupport_cpp")
 
 install(TARGETS
-  coldplate_system
-  cooling_process
+  coolant
   DESTINATION lib/${PROJECT_NAME})
 
 install(DIRECTORY launch/
