@@ -9,8 +9,8 @@ def generate_launch_description():
     return LaunchDescription([
         Node(
             package='thermal_control',
-            executable='coldplate_system',
-            name='coldplate_system',
+            executable='coolant',
+            name='internal_coolant',
             output='screen',
             
             emulate_tty=True
@@ -18,8 +18,8 @@ def generate_launch_description():
 
         Node(
             package='thermal_control',
-            executable='cooling_process',
-            name='cooling_process',
+            executable='external_loop',
+            name='external_loop',
             output='screen',
             emulate_tty=True
         ),

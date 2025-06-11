@@ -23,6 +23,7 @@ set(msg_files
   "srv/CoolantFlow.srv"
   "srv/InternalLoop.srv"
   "msg/InternalLoopStatus.msg"
+  "msg/ExternalLoopStatus.msg"
 )
 
 rosidl_generate_interfaces(${PROJECT_NAME}
@@ -32,15 +33,19 @@ rosidl_generate_interfaces(${PROJECT_NAME}
 
 
 add_executable(coolant src/coolant.cpp)
-ament_target_dependencies(coolant rosidl_default_generators rclcpp sensor_msgs space_station_eclss)
+ament_target_dependencies(coolant rosidl_default_generators rclcpp  std_srvs space_station_eclss)
 rosidl_target_interfaces(coolant ${PROJECT_NAME} "rosidl_typesupport_cpp")
 
+add_executable(external_loop src/external_loop.cpp)
+ament_target_dependencies(external_loop rosidl_default_generators rclcpp sensor_msgs space_station_eclss)
+rosidl_target_interfaces(external_loop ${PROJECT_NAME} "rosidl_typesupport_cpp")
 
 include_directories(include)
 
 
 install(TARGETS
   coolant
+  external_loop
   DESTINATION lib/${PROJECT_NAME})
 
 install(DIRECTORY launch/
