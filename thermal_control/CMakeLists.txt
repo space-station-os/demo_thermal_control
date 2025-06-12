@@ -24,6 +24,7 @@ set(msg_files
   "srv/InternalLoop.srv"
   "msg/InternalLoopStatus.msg"
   "msg/ExternalLoopStatus.msg"
+  "srv/VentHeat.srv"
 )
 
 rosidl_generate_interfaces(${PROJECT_NAME}
@@ -40,12 +41,17 @@ add_executable(external_loop src/external_loop.cpp)
 ament_target_dependencies(external_loop rosidl_default_generators rclcpp sensor_msgs space_station_eclss)
 rosidl_target_interfaces(external_loop ${PROJECT_NAME} "rosidl_typesupport_cpp")
 
+add_executable(radiator src/radiators.cpp)
+ament_target_dependencies(radiator rosidl_default_generators rclcpp sensor_msgs space_station_eclss)
+rosidl_target_interfaces(radiator ${PROJECT_NAME} "rosidl_typesupport_cpp")
+
 include_directories(include)
 
 
 install(TARGETS
   coolant
   external_loop
+  radiator
   DESTINATION lib/${PROJECT_NAME})
 
 install(DIRECTORY launch/

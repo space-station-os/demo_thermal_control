@@ -40,7 +40,7 @@ CoolantManager::CoolantManager()
     std::chrono::seconds(5), std::bind(&CoolantManager::control_cycle, this));
 
   publish_timer_ = this->create_wall_timer(
-    std::chrono::seconds(5), std::bind(&CoolantManager::publish_loop_temperatures, this));
+    std::chrono::seconds(1), std::bind(&CoolantManager::publish_loop_temperatures, this));
 
   request_water();  // Initial fill
 }
@@ -164,7 +164,7 @@ void CoolantManager::publish_loop_temperatures()
 void CoolantManager::control_cycle()
 {
   // Simulate heat gain in internal loop
-  current_temperature_ += 0.9;
+  current_temperature_ += 3.5;
 
   // Heater hysteresis logic
   if (ammonia_temp_ < -10.0) {

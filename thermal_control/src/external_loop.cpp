@@ -23,6 +23,8 @@ ExternalLoopA::ExternalLoopA()
     std::chrono::seconds(5),
     std::bind(&ExternalLoopA::try_ammonia_refill, this));
 
+  radiator_client_ = this->create_client<thermal_control::srv::VentHeat>("/tcs/radiator_a/vent_heat");
+
   RCLCPP_INFO(this->get_logger(), "[INIT] External Loop A Node Ready.");
 
   // First attempt to fill
@@ -69,8 +71,8 @@ void ExternalLoopA::interface_heat_exchanger(const thermal_control::msg::Interna
   }
 
   double loop_temp = msg->loop_a.temperature;
-  if (loop_temp < 70.0) {
-    RCLCPP_INFO(this->get_logger(), "[SKIP] Loop A temperature %.2f°C below threshold (70°C).", loop_temp);
+  if (loop_temp < 45.0) {
+    RCLCPP_INFO(this->get_logger(), "[SKIP] Loop A temperature %.2f°C below threshold (45°C).", loop_temp);
     return;
   }
 
@@ -99,6 +101,23 @@ void ExternalLoopA::interface_heat_exchanger(const thermal_control::msg::Interna
   // Mark ammonia as used, refill will be attempted by retry_timer
   ammonia_temp_ = ammonia_temp_after;
   ammonia_filled_ = false;
+  if (radiator_client_->wait_for_service(std::chrono::milliseconds(500))) {
+    auto req = std::make_shared<thermal_control::srv::VentHeat::Request>();
+    req->excess_heat = received_heat;
+
+    radiator_client_->async_send_request(req,
+        [this](rclcpp::Client<thermal_control::srv::VentHeat>::SharedFuture future) {
+          auto resp = future.get();
+          if (resp->success) {
+            RCLCPP_INFO(this->get_logger(), "[RADIATOR] Heat vented successfully.");
+          } else {
+            RCLCPP_WARN(this->get_logger(), "[RADIATOR] Failed to vent heat: %s", resp->message.c_str());
+          }
+        });
+  } else {
+    RCLCPP_WARN(this->get_logger(), "[RADIATOR] Service unavailable for heat venting.");
+  }
+
 }
 
 }  // namespace thermal_control
