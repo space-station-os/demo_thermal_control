@@ -25,8 +25,8 @@ def generate_launch_description():
         ),
         Node(
             package='thermal_control',
-            executable='external_loop',
-            name='external_loop',
+            executable='radiator',
+            name='radiators',
             output='screen',
             emulate_tty=True
         ),
