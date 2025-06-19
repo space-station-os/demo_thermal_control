@@ -39,8 +39,7 @@ CoolantManager::CoolantManager()
   control_timer_ = this->create_wall_timer(
     std::chrono::seconds(5), std::bind(&CoolantManager::control_cycle, this));
 
-  publish_timer_ = this->create_wall_timer(
-    std::chrono::seconds(1), std::bind(&CoolantManager::publish_loop_temperatures, this));
+  
 
   request_water();  // Initial fill
 }
@@ -71,6 +70,8 @@ void CoolantManager::request_water()
   {
     auto resp = future.get();
     if (resp->success && resp->delivered_volume > 0.0) {
+      publish_timer_ = this->create_wall_timer(
+          std::chrono::seconds(1), std::bind(&CoolantManager::publish_loop_temperatures, this));
       double half = resp->delivered_volume / 2.0;
       current_temperature_ += 2.5;
 

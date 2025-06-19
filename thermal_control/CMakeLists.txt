@@ -29,7 +29,7 @@ set(msg_files
 
 rosidl_generate_interfaces(${PROJECT_NAME}
   ${msg_files} 
-  DEPENDENCIES  std_msgs sensor_msgs
+  DEPENDENCIES  std_msgs sensor_msgs space_station_eclss
 )
 
 
