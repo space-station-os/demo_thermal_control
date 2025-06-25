@@ -689,7 +689,8 @@ CMakeFiles/ThermalPlugin.dir/thermal_plugin.cc.o: \
  /usr/include/gz/msgs10/gz/msgs/details/pointcloud_packed.pb.h \
  /usr/include/c++/11/cstdarg \
  /usr/include/gz/msgs10/gz/msgs/detail/PointCloudPackedUtils.hh \
- /usr/include/gz/msgs10/gz/msgs/stringmsg_v.pb.h \
- /usr/include/gz/msgs10/gz/msgs/details/stringmsg_v.pb.h \
- /home/siddarth/ssos_ws/src/demo_thermal_control/thermal_control/plugin/build/thermal_plugin-thermal_plugin-msgs_genmsg/thermal_control/msgs/ThermalNodeState.pb.h \
- /home/siddarth/ssos_ws/src/demo_thermal_control/thermal_control/plugin/build/thermal_plugin-thermal_plugin-msgs_genmsg/thermal_control/msgs/details/ThermalNodeState.pb.h
+ /usr/include/google/protobuf/text_format.h \
+ /home/siddarth/ssos_ws/src/demo_thermal_control/thermal_control/plugin/build/thermal_control-msgs_genmsg/thermal_controller/ThermalNodeData.pb.h \
+ /home/siddarth/ssos_ws/src/demo_thermal_control/thermal_control/plugin/build/thermal_control-msgs_genmsg/thermal_controller/details/ThermalNodeData.pb.h \
+ /home/siddarth/ssos_ws/src/demo_thermal_control/thermal_control/plugin/build/thermal_control-msgs_genmsg/thermal_controller/ThermalLinkFlow.pb.h \
+ /home/siddarth/ssos_ws/src/demo_thermal_control/thermal_control/plugin/build/thermal_control-msgs_genmsg/thermal_controller/details/ThermalLinkFlow.pb.h

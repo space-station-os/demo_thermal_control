@@ -43,54 +43,61 @@ if(NOT DEFINED CMAKE_OBJDUMP)
 endif()
 
 if("x${CMAKE_INSTALL_COMPONENT}x" STREQUAL "xUnspecifiedx" OR NOT CMAKE_INSTALL_COMPONENT)
-  if(EXISTS "$ENV{DESTDIR}${CMAKE_INSTALL_PREFIX}/lib/libthermal_plugin-thermal_plugin-msgs.so.VERSION" AND
-     NOT IS_SYMLINK "$ENV{DESTDIR}${CMAKE_INSTALL_PREFIX}/lib/libthermal_plugin-thermal_plugin-msgs.so.VERSION")
+  if(EXISTS "$ENV{DESTDIR}${CMAKE_INSTALL_PREFIX}/lib/libthermal_control-msgs.so.VERSION" AND
+     NOT IS_SYMLINK "$ENV{DESTDIR}${CMAKE_INSTALL_PREFIX}/lib/libthermal_control-msgs.so.VERSION")
     file(RPATH_CHECK
-         FILE "$ENV{DESTDIR}${CMAKE_INSTALL_PREFIX}/lib/libthermal_plugin-thermal_plugin-msgs.so.VERSION"
+         FILE "$ENV{DESTDIR}${CMAKE_INSTALL_PREFIX}/lib/libthermal_control-msgs.so.VERSION"
          RPATH "")
   endif()
-  file(INSTALL DESTINATION "${CMAKE_INSTALL_PREFIX}/lib" TYPE SHARED_LIBRARY FILES "/home/siddarth/ssos_ws/src/demo_thermal_control/thermal_control/plugin/build/libthermal_plugin-thermal_plugin-msgs.so.VERSION")
-  if(EXISTS "$ENV{DESTDIR}${CMAKE_INSTALL_PREFIX}/lib/libthermal_plugin-thermal_plugin-msgs.so.VERSION" AND
-     NOT IS_SYMLINK "$ENV{DESTDIR}${CMAKE_INSTALL_PREFIX}/lib/libthermal_plugin-thermal_plugin-msgs.so.VERSION")
+  file(INSTALL DESTINATION "${CMAKE_INSTALL_PREFIX}/lib" TYPE SHARED_LIBRARY FILES "/home/siddarth/ssos_ws/src/demo_thermal_control/thermal_control/plugin/build/libthermal_control-msgs.so.VERSION")
+  if(EXISTS "$ENV{DESTDIR}${CMAKE_INSTALL_PREFIX}/lib/libthermal_control-msgs.so.VERSION" AND
+     NOT IS_SYMLINK "$ENV{DESTDIR}${CMAKE_INSTALL_PREFIX}/lib/libthermal_control-msgs.so.VERSION")
     if(CMAKE_INSTALL_DO_STRIP)
-      execute_process(COMMAND "/usr/bin/strip" "$ENV{DESTDIR}${CMAKE_INSTALL_PREFIX}/lib/libthermal_plugin-thermal_plugin-msgs.so.VERSION")
+      execute_process(COMMAND "/usr/bin/strip" "$ENV{DESTDIR}${CMAKE_INSTALL_PREFIX}/lib/libthermal_control-msgs.so.VERSION")
     endif()
   endif()
 endif()
 
 if("x${CMAKE_INSTALL_COMPONENT}x" STREQUAL "xUnspecifiedx" OR NOT CMAKE_INSTALL_COMPONENT)
-  if(EXISTS "$ENV{DESTDIR}${CMAKE_INSTALL_PREFIX}/lib/libthermal_plugin-thermal_plugin-msgs.so" AND
-     NOT IS_SYMLINK "$ENV{DESTDIR}${CMAKE_INSTALL_PREFIX}/lib/libthermal_plugin-thermal_plugin-msgs.so")
+  if(EXISTS "$ENV{DESTDIR}${CMAKE_INSTALL_PREFIX}/lib/libthermal_control-msgs.so" AND
+     NOT IS_SYMLINK "$ENV{DESTDIR}${CMAKE_INSTALL_PREFIX}/lib/libthermal_control-msgs.so")
     file(RPATH_CHECK
-         FILE "$ENV{DESTDIR}${CMAKE_INSTALL_PREFIX}/lib/libthermal_plugin-thermal_plugin-msgs.so"
+         FILE "$ENV{DESTDIR}${CMAKE_INSTALL_PREFIX}/lib/libthermal_control-msgs.so"
          RPATH "")
   endif()
-  file(INSTALL DESTINATION "${CMAKE_INSTALL_PREFIX}/lib" TYPE SHARED_LIBRARY FILES "/home/siddarth/ssos_ws/src/demo_thermal_control/thermal_control/plugin/build/libthermal_plugin-thermal_plugin-msgs.so")
-  if(EXISTS "$ENV{DESTDIR}${CMAKE_INSTALL_PREFIX}/lib/libthermal_plugin-thermal_plugin-msgs.so" AND
-     NOT IS_SYMLINK "$ENV{DESTDIR}${CMAKE_INSTALL_PREFIX}/lib/libthermal_plugin-thermal_plugin-msgs.so")
+  file(INSTALL DESTINATION "${CMAKE_INSTALL_PREFIX}/lib" TYPE SHARED_LIBRARY FILES "/home/siddarth/ssos_ws/src/demo_thermal_control/thermal_control/plugin/build/libthermal_control-msgs.so")
+  if(EXISTS "$ENV{DESTDIR}${CMAKE_INSTALL_PREFIX}/lib/libthermal_control-msgs.so" AND
+     NOT IS_SYMLINK "$ENV{DESTDIR}${CMAKE_INSTALL_PREFIX}/lib/libthermal_control-msgs.so")
     if(CMAKE_INSTALL_DO_STRIP)
-      execute_process(COMMAND "/usr/bin/strip" "$ENV{DESTDIR}${CMAKE_INSTALL_PREFIX}/lib/libthermal_plugin-thermal_plugin-msgs.so")
+      execute_process(COMMAND "/usr/bin/strip" "$ENV{DESTDIR}${CMAKE_INSTALL_PREFIX}/lib/libthermal_control-msgs.so")
     endif()
   endif()
 endif()
 
 if("x${CMAKE_INSTALL_COMPONENT}x" STREQUAL "xUnspecifiedx" OR NOT CMAKE_INSTALL_COMPONENT)
-  file(INSTALL DESTINATION "${CMAKE_INSTALL_PREFIX}/include/thermal_control/msgs" TYPE FILE FILES
-    "/home/siddarth/ssos_ws/src/demo_thermal_control/thermal_control/plugin/build/thermal_plugin-thermal_plugin-msgs_genmsg/thermal_control/msgs/ThermalNodeState.pb.h"
-    "/home/siddarth/ssos_ws/src/demo_thermal_control/thermal_control/plugin/build/thermal_plugin-thermal_plugin-msgs_genmsg/thermal_control/msgs/MessageTypes.hh"
+  file(INSTALL DESTINATION "${CMAKE_INSTALL_PREFIX}/include/thermal_controller" TYPE FILE FILES
+    "/home/siddarth/ssos_ws/src/demo_thermal_control/thermal_control/plugin/build/thermal_control-msgs_genmsg/thermal_controller/ThermalNodeData.pb.h"
+    "/home/siddarth/ssos_ws/src/demo_thermal_control/thermal_control/plugin/build/thermal_control-msgs_genmsg/thermal_controller/ThermalLinkFlow.pb.h"
+    "/home/siddarth/ssos_ws/src/demo_thermal_control/thermal_control/plugin/build/thermal_control-msgs_genmsg/thermal_controller/MessageTypes.hh"
     )
 endif()
 
 if("x${CMAKE_INSTALL_COMPONENT}x" STREQUAL "xUnspecifiedx" OR NOT CMAKE_INSTALL_COMPONENT)
-  file(INSTALL DESTINATION "${CMAKE_INSTALL_PREFIX}/include/thermal_control/msgs/details" TYPE FILE FILES "/home/siddarth/ssos_ws/src/demo_thermal_control/thermal_control/plugin/build/thermal_plugin-thermal_plugin-msgs_genmsg/thermal_control/msgs/details/ThermalNodeState.pb.h")
+  file(INSTALL DESTINATION "${CMAKE_INSTALL_PREFIX}/include/thermal_controller/details" TYPE FILE FILES
+    "/home/siddarth/ssos_ws/src/demo_thermal_control/thermal_control/plugin/build/thermal_control-msgs_genmsg/thermal_controller/details/ThermalNodeData.pb.h"
+    "/home/siddarth/ssos_ws/src/demo_thermal_control/thermal_control/plugin/build/thermal_control-msgs_genmsg/thermal_controller/details/ThermalLinkFlow.pb.h"
+    )
 endif()
 
 if("x${CMAKE_INSTALL_COMPONENT}x" STREQUAL "xUnspecifiedx" OR NOT CMAKE_INSTALL_COMPONENT)
-  file(INSTALL DESTINATION "${CMAKE_INSTALL_PREFIX}/share/gz/protos" TYPE FILE FILES "/home/siddarth/ssos_ws/src/demo_thermal_control/thermal_control/plugin/build/thermal_plugin-thermal_plugin-msgs.gz_desc")
+  file(INSTALL DESTINATION "${CMAKE_INSTALL_PREFIX}/share/gz/protos" TYPE FILE FILES "/home/siddarth/ssos_ws/src/demo_thermal_control/thermal_control/plugin/build/thermal_control-msgs.gz_desc")
 endif()
 
 if("x${CMAKE_INSTALL_COMPONENT}x" STREQUAL "xUnspecifiedx" OR NOT CMAKE_INSTALL_COMPONENT)
-  file(INSTALL DESTINATION "${CMAKE_INSTALL_PREFIX}/lib/python/gz/msgs" TYPE FILE FILES "/home/siddarth/ssos_ws/src/demo_thermal_control/thermal_control/plugin/build/thermal_plugin-thermal_plugin-msgs_genmsg/python/thermal_control/msgs/ThermalNodeState_pb2.py")
+  file(INSTALL DESTINATION "${CMAKE_INSTALL_PREFIX}/lib/python/gz/msgs10" TYPE FILE FILES
+    "/home/siddarth/ssos_ws/src/demo_thermal_control/thermal_control/plugin/build/thermal_control-msgs_genmsg/python/thermal_controller/ThermalNodeData_pb2.py"
+    "/home/siddarth/ssos_ws/src/demo_thermal_control/thermal_control/plugin/build/thermal_control-msgs_genmsg/python/thermal_controller/ThermalLinkFlow_pb2.py"
+    )
 endif()
 
 if("x${CMAKE_INSTALL_COMPONENT}x" STREQUAL "xUnspecifiedx" OR NOT CMAKE_INSTALL_COMPONENT)
@@ -103,6 +110,10 @@ if("x${CMAKE_INSTALL_COMPONENT}x" STREQUAL "xUnspecifiedx" OR NOT CMAKE_INSTALL_
   file(INSTALL DESTINATION "${CMAKE_INSTALL_PREFIX}/lib" TYPE SHARED_LIBRARY FILES "/home/siddarth/ssos_ws/src/demo_thermal_control/thermal_control/plugin/lib/libThermalPlugin.so")
   if(EXISTS "$ENV{DESTDIR}${CMAKE_INSTALL_PREFIX}/lib/libThermalPlugin.so" AND
      NOT IS_SYMLINK "$ENV{DESTDIR}${CMAKE_INSTALL_PREFIX}/lib/libThermalPlugin.so")
+    file(RPATH_CHANGE
+         FILE "$ENV{DESTDIR}${CMAKE_INSTALL_PREFIX}/lib/libThermalPlugin.so"
+         OLD_RPATH "/home/siddarth/ssos_ws/src/demo_thermal_control/thermal_control/plugin/build:"
+         NEW_RPATH "")
     if(CMAKE_INSTALL_DO_STRIP)
       execute_process(COMMAND "/usr/bin/strip" "$ENV{DESTDIR}${CMAKE_INSTALL_PREFIX}/lib/libThermalPlugin.so")
     endif()

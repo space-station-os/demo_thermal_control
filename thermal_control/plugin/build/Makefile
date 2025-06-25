@@ -162,17 +162,17 @@ depend:
 .PHONY : depend
 
 #=============================================================================
-# Target rules for targets named thermal_plugin-thermal_plugin-msgs
+# Target rules for targets named thermal_control-msgs
 
 # Build rule for target.
-thermal_plugin-thermal_plugin-msgs: cmake_check_build_system
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/Makefile2 thermal_plugin-thermal_plugin-msgs
-.PHONY : thermal_plugin-thermal_plugin-msgs
+thermal_control-msgs: cmake_check_build_system
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/Makefile2 thermal_control-msgs
+.PHONY : thermal_control-msgs
 
 # fast build rule for target.
-thermal_plugin-thermal_plugin-msgs/fast:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/thermal_plugin-thermal_plugin-msgs.dir/build.make CMakeFiles/thermal_plugin-thermal_plugin-msgs.dir/build
-.PHONY : thermal_plugin-thermal_plugin-msgs/fast
+thermal_control-msgs/fast:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/thermal_control-msgs.dir/build.make CMakeFiles/thermal_control-msgs.dir/build
+.PHONY : thermal_control-msgs/fast
 
 #=============================================================================
 # Target rules for targets named ThermalPlugin
@@ -187,53 +187,77 @@ ThermalPlugin/fast:
 	$(MAKE) $(MAKESILENT) -f CMakeFiles/ThermalPlugin.dir/build.make CMakeFiles/ThermalPlugin.dir/build
 .PHONY : ThermalPlugin/fast
 
-thermal_plugin-thermal_plugin-msgs_genmsg/thermal_control/msgs/ThermalNodeState.pb.o: thermal_plugin-thermal_plugin-msgs_genmsg/thermal_control/msgs/ThermalNodeState.pb.cc.o
-.PHONY : thermal_plugin-thermal_plugin-msgs_genmsg/thermal_control/msgs/ThermalNodeState.pb.o
+thermal_control-msgs_genmsg/thermal_controller/ThermalLinkFlow.pb.o: thermal_control-msgs_genmsg/thermal_controller/ThermalLinkFlow.pb.cc.o
+.PHONY : thermal_control-msgs_genmsg/thermal_controller/ThermalLinkFlow.pb.o
 
 # target to build an object file
-thermal_plugin-thermal_plugin-msgs_genmsg/thermal_control/msgs/ThermalNodeState.pb.cc.o:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/thermal_plugin-thermal_plugin-msgs.dir/build.make CMakeFiles/thermal_plugin-thermal_plugin-msgs.dir/thermal_plugin-thermal_plugin-msgs_genmsg/thermal_control/msgs/ThermalNodeState.pb.cc.o
-.PHONY : thermal_plugin-thermal_plugin-msgs_genmsg/thermal_control/msgs/ThermalNodeState.pb.cc.o
+thermal_control-msgs_genmsg/thermal_controller/ThermalLinkFlow.pb.cc.o:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/thermal_control-msgs.dir/build.make CMakeFiles/thermal_control-msgs.dir/thermal_control-msgs_genmsg/thermal_controller/ThermalLinkFlow.pb.cc.o
+.PHONY : thermal_control-msgs_genmsg/thermal_controller/ThermalLinkFlow.pb.cc.o
 
-thermal_plugin-thermal_plugin-msgs_genmsg/thermal_control/msgs/ThermalNodeState.pb.i: thermal_plugin-thermal_plugin-msgs_genmsg/thermal_control/msgs/ThermalNodeState.pb.cc.i
-.PHONY : thermal_plugin-thermal_plugin-msgs_genmsg/thermal_control/msgs/ThermalNodeState.pb.i
+thermal_control-msgs_genmsg/thermal_controller/ThermalLinkFlow.pb.i: thermal_control-msgs_genmsg/thermal_controller/ThermalLinkFlow.pb.cc.i
+.PHONY : thermal_control-msgs_genmsg/thermal_controller/ThermalLinkFlow.pb.i
 
 # target to preprocess a source file
-thermal_plugin-thermal_plugin-msgs_genmsg/thermal_control/msgs/ThermalNodeState.pb.cc.i:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/thermal_plugin-thermal_plugin-msgs.dir/build.make CMakeFiles/thermal_plugin-thermal_plugin-msgs.dir/thermal_plugin-thermal_plugin-msgs_genmsg/thermal_control/msgs/ThermalNodeState.pb.cc.i
-.PHONY : thermal_plugin-thermal_plugin-msgs_genmsg/thermal_control/msgs/ThermalNodeState.pb.cc.i
+thermal_control-msgs_genmsg/thermal_controller/ThermalLinkFlow.pb.cc.i:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/thermal_control-msgs.dir/build.make CMakeFiles/thermal_control-msgs.dir/thermal_control-msgs_genmsg/thermal_controller/ThermalLinkFlow.pb.cc.i
+.PHONY : thermal_control-msgs_genmsg/thermal_controller/ThermalLinkFlow.pb.cc.i
 
-thermal_plugin-thermal_plugin-msgs_genmsg/thermal_control/msgs/ThermalNodeState.pb.s: thermal_plugin-thermal_plugin-msgs_genmsg/thermal_control/msgs/ThermalNodeState.pb.cc.s
-.PHONY : thermal_plugin-thermal_plugin-msgs_genmsg/thermal_control/msgs/ThermalNodeState.pb.s
+thermal_control-msgs_genmsg/thermal_controller/ThermalLinkFlow.pb.s: thermal_control-msgs_genmsg/thermal_controller/ThermalLinkFlow.pb.cc.s
+.PHONY : thermal_control-msgs_genmsg/thermal_controller/ThermalLinkFlow.pb.s
 
 # target to generate assembly for a file
-thermal_plugin-thermal_plugin-msgs_genmsg/thermal_control/msgs/ThermalNodeState.pb.cc.s:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/thermal_plugin-thermal_plugin-msgs.dir/build.make CMakeFiles/thermal_plugin-thermal_plugin-msgs.dir/thermal_plugin-thermal_plugin-msgs_genmsg/thermal_control/msgs/ThermalNodeState.pb.cc.s
-.PHONY : thermal_plugin-thermal_plugin-msgs_genmsg/thermal_control/msgs/ThermalNodeState.pb.cc.s
+thermal_control-msgs_genmsg/thermal_controller/ThermalLinkFlow.pb.cc.s:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/thermal_control-msgs.dir/build.make CMakeFiles/thermal_control-msgs.dir/thermal_control-msgs_genmsg/thermal_controller/ThermalLinkFlow.pb.cc.s
+.PHONY : thermal_control-msgs_genmsg/thermal_controller/ThermalLinkFlow.pb.cc.s
 
-thermal_plugin-thermal_plugin-msgs_genmsg/thermal_control/msgs/register.o: thermal_plugin-thermal_plugin-msgs_genmsg/thermal_control/msgs/register.cc.o
-.PHONY : thermal_plugin-thermal_plugin-msgs_genmsg/thermal_control/msgs/register.o
+thermal_control-msgs_genmsg/thermal_controller/ThermalNodeData.pb.o: thermal_control-msgs_genmsg/thermal_controller/ThermalNodeData.pb.cc.o
+.PHONY : thermal_control-msgs_genmsg/thermal_controller/ThermalNodeData.pb.o
 
 # target to build an object file
-thermal_plugin-thermal_plugin-msgs_genmsg/thermal_control/msgs/register.cc.o:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/thermal_plugin-thermal_plugin-msgs.dir/build.make CMakeFiles/thermal_plugin-thermal_plugin-msgs.dir/thermal_plugin-thermal_plugin-msgs_genmsg/thermal_control/msgs/register.cc.o
-.PHONY : thermal_plugin-thermal_plugin-msgs_genmsg/thermal_control/msgs/register.cc.o
+thermal_control-msgs_genmsg/thermal_controller/ThermalNodeData.pb.cc.o:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/thermal_control-msgs.dir/build.make CMakeFiles/thermal_control-msgs.dir/thermal_control-msgs_genmsg/thermal_controller/ThermalNodeData.pb.cc.o
+.PHONY : thermal_control-msgs_genmsg/thermal_controller/ThermalNodeData.pb.cc.o
 
-thermal_plugin-thermal_plugin-msgs_genmsg/thermal_control/msgs/register.i: thermal_plugin-thermal_plugin-msgs_genmsg/thermal_control/msgs/register.cc.i
-.PHONY : thermal_plugin-thermal_plugin-msgs_genmsg/thermal_control/msgs/register.i
+thermal_control-msgs_genmsg/thermal_controller/ThermalNodeData.pb.i: thermal_control-msgs_genmsg/thermal_controller/ThermalNodeData.pb.cc.i
+.PHONY : thermal_control-msgs_genmsg/thermal_controller/ThermalNodeData.pb.i
 
 # target to preprocess a source file
-thermal_plugin-thermal_plugin-msgs_genmsg/thermal_control/msgs/register.cc.i:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/thermal_plugin-thermal_plugin-msgs.dir/build.make CMakeFiles/thermal_plugin-thermal_plugin-msgs.dir/thermal_plugin-thermal_plugin-msgs_genmsg/thermal_control/msgs/register.cc.i
-.PHONY : thermal_plugin-thermal_plugin-msgs_genmsg/thermal_control/msgs/register.cc.i
+thermal_control-msgs_genmsg/thermal_controller/ThermalNodeData.pb.cc.i:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/thermal_control-msgs.dir/build.make CMakeFiles/thermal_control-msgs.dir/thermal_control-msgs_genmsg/thermal_controller/ThermalNodeData.pb.cc.i
+.PHONY : thermal_control-msgs_genmsg/thermal_controller/ThermalNodeData.pb.cc.i
 
-thermal_plugin-thermal_plugin-msgs_genmsg/thermal_control/msgs/register.s: thermal_plugin-thermal_plugin-msgs_genmsg/thermal_control/msgs/register.cc.s
-.PHONY : thermal_plugin-thermal_plugin-msgs_genmsg/thermal_control/msgs/register.s
+thermal_control-msgs_genmsg/thermal_controller/ThermalNodeData.pb.s: thermal_control-msgs_genmsg/thermal_controller/ThermalNodeData.pb.cc.s
+.PHONY : thermal_control-msgs_genmsg/thermal_controller/ThermalNodeData.pb.s
 
 # target to generate assembly for a file
-thermal_plugin-thermal_plugin-msgs_genmsg/thermal_control/msgs/register.cc.s:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/thermal_plugin-thermal_plugin-msgs.dir/build.make CMakeFiles/thermal_plugin-thermal_plugin-msgs.dir/thermal_plugin-thermal_plugin-msgs_genmsg/thermal_control/msgs/register.cc.s
-.PHONY : thermal_plugin-thermal_plugin-msgs_genmsg/thermal_control/msgs/register.cc.s
+thermal_control-msgs_genmsg/thermal_controller/ThermalNodeData.pb.cc.s:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/thermal_control-msgs.dir/build.make CMakeFiles/thermal_control-msgs.dir/thermal_control-msgs_genmsg/thermal_controller/ThermalNodeData.pb.cc.s
+.PHONY : thermal_control-msgs_genmsg/thermal_controller/ThermalNodeData.pb.cc.s
+
+thermal_control-msgs_genmsg/thermal_controller/register.o: thermal_control-msgs_genmsg/thermal_controller/register.cc.o
+.PHONY : thermal_control-msgs_genmsg/thermal_controller/register.o
+
+# target to build an object file
+thermal_control-msgs_genmsg/thermal_controller/register.cc.o:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/thermal_control-msgs.dir/build.make CMakeFiles/thermal_control-msgs.dir/thermal_control-msgs_genmsg/thermal_controller/register.cc.o
+.PHONY : thermal_control-msgs_genmsg/thermal_controller/register.cc.o
+
+thermal_control-msgs_genmsg/thermal_controller/register.i: thermal_control-msgs_genmsg/thermal_controller/register.cc.i
+.PHONY : thermal_control-msgs_genmsg/thermal_controller/register.i
+
+# target to preprocess a source file
+thermal_control-msgs_genmsg/thermal_controller/register.cc.i:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/thermal_control-msgs.dir/build.make CMakeFiles/thermal_control-msgs.dir/thermal_control-msgs_genmsg/thermal_controller/register.cc.i
+.PHONY : thermal_control-msgs_genmsg/thermal_controller/register.cc.i
+
+thermal_control-msgs_genmsg/thermal_controller/register.s: thermal_control-msgs_genmsg/thermal_controller/register.cc.s
+.PHONY : thermal_control-msgs_genmsg/thermal_controller/register.s
+
+# target to generate assembly for a file
+thermal_control-msgs_genmsg/thermal_controller/register.cc.s:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/thermal_control-msgs.dir/build.make CMakeFiles/thermal_control-msgs.dir/thermal_control-msgs_genmsg/thermal_controller/register.cc.s
+.PHONY : thermal_control-msgs_genmsg/thermal_controller/register.cc.s
 
 thermal_plugin.o: thermal_plugin.cc.o
 .PHONY : thermal_plugin.o
@@ -272,13 +296,16 @@ help:
 	@echo "... list_install_components"
 	@echo "... rebuild_cache"
 	@echo "... ThermalPlugin"
-	@echo "... thermal_plugin-thermal_plugin-msgs"
-	@echo "... thermal_plugin-thermal_plugin-msgs_genmsg/thermal_control/msgs/ThermalNodeState.pb.o"
-	@echo "... thermal_plugin-thermal_plugin-msgs_genmsg/thermal_control/msgs/ThermalNodeState.pb.i"
-	@echo "... thermal_plugin-thermal_plugin-msgs_genmsg/thermal_control/msgs/ThermalNodeState.pb.s"
-	@echo "... thermal_plugin-thermal_plugin-msgs_genmsg/thermal_control/msgs/register.o"
-	@echo "... thermal_plugin-thermal_plugin-msgs_genmsg/thermal_control/msgs/register.i"
-	@echo "... thermal_plugin-thermal_plugin-msgs_genmsg/thermal_control/msgs/register.s"
+	@echo "... thermal_control-msgs"
+	@echo "... thermal_control-msgs_genmsg/thermal_controller/ThermalLinkFlow.pb.o"
+	@echo "... thermal_control-msgs_genmsg/thermal_controller/ThermalLinkFlow.pb.i"
+	@echo "... thermal_control-msgs_genmsg/thermal_controller/ThermalLinkFlow.pb.s"
+	@echo "... thermal_control-msgs_genmsg/thermal_controller/ThermalNodeData.pb.o"
+	@echo "... thermal_control-msgs_genmsg/thermal_controller/ThermalNodeData.pb.i"
+	@echo "... thermal_control-msgs_genmsg/thermal_controller/ThermalNodeData.pb.s"
+	@echo "... thermal_control-msgs_genmsg/thermal_controller/register.o"
+	@echo "... thermal_control-msgs_genmsg/thermal_controller/register.i"
+	@echo "... thermal_control-msgs_genmsg/thermal_controller/register.s"
 	@echo "... thermal_plugin.o"
 	@echo "... thermal_plugin.i"
 	@echo "... thermal_plugin.s"

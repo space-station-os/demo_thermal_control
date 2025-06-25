@@ -157,7 +157,7 @@ CMAKE_PROJECT_DESCRIPTION:STATIC=
 CMAKE_PROJECT_HOMEPAGE_URL:STATIC=
 
 //Value Computed by CMake
-CMAKE_PROJECT_NAME:STATIC=thermal_plugin
+CMAKE_PROJECT_NAME:STATIC=thermal_control
 
 //Path to a program.
 CMAKE_RANLIB:FILEPATH=/usr/bin/ranlib
@@ -348,7 +348,7 @@ SWSCALE_LIBRARY_swscale:FILEPATH=/usr/lib/x86_64-linux-gnu/libswscale.so
 TINYXML2_LIBRARY_tinyxml2:FILEPATH=/usr/lib/x86_64-linux-gnu/libtinyxml2.so
 
 //Dependencies for the target
-ThermalPlugin_LIB_DEPENDS:STATIC=general;gz-sim8::gz-sim8;general;gz-plugin2::gz-plugin2;general;gz-transport13::gz-transport13;general;gz-common5::gz-common5;general;gz-msgs10::gz-msgs10;general;/usr/lib/x86_64-linux-gnu/libprotobuf.so;
+ThermalPlugin_LIB_DEPENDS:STATIC=general;gz-sim8::gz-sim8;general;gz-plugin2::gz-plugin2;general;gz-transport13::gz-transport13;general;gz-common5::gz-common5;general;gz-msgs10::gz-msgs10;general;thermal_control-msgs;
 
 //Path to a library.
 UUID_LIBRARY_uuid:FILEPATH=/usr/lib/x86_64-linux-gnu/libuuid.so
@@ -555,22 +555,19 @@ pkgcfg_lib_ZeroMQ_zmq:FILEPATH=/usr/lib/x86_64-linux-gnu/libzmq.so
 sdformat14_DIR:PATH=/usr/lib/x86_64-linux-gnu/cmake/sdformat14
 
 //Dependencies for the target
-thermal_plugin-msgs_LIB_DEPENDS:STATIC=general;/usr/lib/x86_64-linux-gnu/libprotobuf.so;
+thermal_control-msgs_LIB_DEPENDS:STATIC=general;protobuf::libprotobuf;general;gz-msgs10::gz-msgs10;general;gz-msgs10::gz-msgs10;
 
 //Dependencies for the target
-thermal_plugin-thermal_plugin-msgs_LIB_DEPENDS:STATIC=general;protobuf::libprotobuf;general;gz-msgs10::gz-msgs10;general;gz-msgs10::gz-msgs10;
-
-//Dependencies for the target
-thermal_plugin-thermal_plugin_msgs_gen_LIB_DEPENDS:STATIC=general;protobuf::libprotobuf;general;gz-msgs10::gz-msgs10;general;gz-msgs10::gz-msgs10;
+thermal_control-thermal_control-thermal_control_msgs_LIB_DEPENDS:STATIC=general;protobuf::libprotobuf;general;gz-msgs10::gz-msgs10;general;gz-msgs10::gz-msgs10;
 
 //Value Computed by CMake
-thermal_plugin_BINARY_DIR:STATIC=/home/siddarth/ssos_ws/src/demo_thermal_control/thermal_control/plugin/build
+thermal_control_BINARY_DIR:STATIC=/home/siddarth/ssos_ws/src/demo_thermal_control/thermal_control/plugin/build
 
 //Value Computed by CMake
-thermal_plugin_IS_TOP_LEVEL:STATIC=ON
+thermal_control_IS_TOP_LEVEL:STATIC=ON
 
 //Value Computed by CMake
-thermal_plugin_SOURCE_DIR:STATIC=/home/siddarth/ssos_ws/src/demo_thermal_control/thermal_control/plugin
+thermal_control_SOURCE_DIR:STATIC=/home/siddarth/ssos_ws/src/demo_thermal_control/thermal_control/plugin
 
 //The directory containing a CMake configuration file for yaml.
 yaml_DIR:PATH=/opt/ros/humble/cmake

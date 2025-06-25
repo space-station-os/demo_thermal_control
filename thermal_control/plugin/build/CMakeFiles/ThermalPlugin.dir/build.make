@@ -93,7 +93,7 @@ ThermalPlugin_EXTERNAL_OBJECTS =
 ../lib/libThermalPlugin.so: CMakeFiles/ThermalPlugin.dir/thermal_plugin.cc.o
 ../lib/libThermalPlugin.so: CMakeFiles/ThermalPlugin.dir/build.make
 ../lib/libThermalPlugin.so: /usr/lib/x86_64-linux-gnu/libgz-sim8.so.8.9.0
-../lib/libThermalPlugin.so: /usr/lib/x86_64-linux-gnu/libprotobuf.so
+../lib/libThermalPlugin.so: libthermal_control-msgs.so.VERSION
 ../lib/libThermalPlugin.so: /usr/lib/x86_64-linux-gnu/libgz-fuel_tools9.so.9.1.1
 ../lib/libThermalPlugin.so: /usr/lib/x86_64-linux-gnu/libgz-gui8.so.8.4.0
 ../lib/libThermalPlugin.so: /usr/lib/x86_64-linux-gnu/libgz-plugin2-loader.so.2.0.4
@@ -128,14 +128,14 @@ ThermalPlugin_EXTERNAL_OBJECTS =
 ../lib/libThermalPlugin.so: /usr/lib/x86_64-linux-gnu/libgz-common5.so.5.7.1
 ../lib/libThermalPlugin.so: /usr/lib/x86_64-linux-gnu/libgz-transport13-parameters.so.13.4.1
 ../lib/libThermalPlugin.so: /usr/lib/x86_64-linux-gnu/libgz-transport13.so.13.4.1
-../lib/libThermalPlugin.so: /usr/lib/x86_64-linux-gnu/libgz-msgs10.so.10.3.2
-../lib/libThermalPlugin.so: /usr/lib/x86_64-linux-gnu/libtinyxml2.so
-../lib/libThermalPlugin.so: /usr/lib/x86_64-linux-gnu/libtinyxml2.so
 ../lib/libThermalPlugin.so: /usr/lib/x86_64-linux-gnu/libuuid.so
 ../lib/libThermalPlugin.so: /usr/lib/x86_64-linux-gnu/libuuid.so
 ../lib/libThermalPlugin.so: /usr/lib/x86_64-linux-gnu/libsdformat14.so.14.7.0
+../lib/libThermalPlugin.so: /usr/lib/x86_64-linux-gnu/libgz-msgs10.so.10.3.2
 ../lib/libThermalPlugin.so: /usr/lib/x86_64-linux-gnu/libgz-math7.so.7.5.1
 ../lib/libThermalPlugin.so: /usr/lib/x86_64-linux-gnu/libgz-utils2.so.2.2.1
+../lib/libThermalPlugin.so: /usr/lib/x86_64-linux-gnu/libtinyxml2.so
+../lib/libThermalPlugin.so: /usr/lib/x86_64-linux-gnu/libtinyxml2.so
 ../lib/libThermalPlugin.so: /usr/lib/x86_64-linux-gnu/libprotobuf.so
 ../lib/libThermalPlugin.so: CMakeFiles/ThermalPlugin.dir/link.txt
 	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green --bold --progress-dir=/home/siddarth/ssos_ws/src/demo_thermal_control/thermal_control/plugin/build/CMakeFiles --progress-num=$(CMAKE_PROGRESS_2) "Linking CXX shared library ../lib/libThermalPlugin.so"

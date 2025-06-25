@@ -10,13 +10,18 @@
 #include <gz/sim/System.hh>
 #include <gz/transport/Node.hh>
 
-// If you later want to use the ThermalNodeState directly in this header,
-// uncomment this line:
-// #include "thermal_control/ThermalNodeState.pb.h"
+#include <gz/sim/Model.hh>
+#include <gz/sim/Link.hh>
+#include <gz/sim/Util.hh>
+#include <gz/sim/components/Name.hh>
+#include <google/protobuf/text_format.h>
+
+#include <thermal_controller/ThermalNodeData.pb.h>
+#include <thermal_controller/ThermalLinkFlow.pb.h>
+
 
 namespace spacestation {
 
-// Represents a thermal node corresponding to a URDF link
 struct ThermalNode {
   std::string name;
   double temperature = 293.0;
@@ -24,7 +29,6 @@ struct ThermalNode {
   double internal_power = 0.0;
 };
 
-// Represents a thermal link between two nodes
 struct ThermalLink {
   std::string from;
   std::string to;

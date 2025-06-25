@@ -1,12 +1,5 @@
 #include "thermal_plugin.hh"
 
-#include <gz/sim/Model.hh>
-#include <gz/sim/Link.hh>
-#include <gz/sim/Util.hh>
-#include <gz/sim/components/Name.hh>
-#include <gz/msgs/stringmsg_v.pb.h>
-
-#include "thermal_control/msgs/ThermalNodeState.pb.h"
 
 
 using namespace spacestation;
@@ -50,11 +43,10 @@ void ThermalPlugin::Configure(
   }
 
   node_pub_ = std::make_shared<gz::transport::Node::Publisher>(
-    gz_node_.Advertise<thermal_control::msgs::ThermalNodeState_V
->("/thermal/nodes/state"));
+    gz_node_.Advertise<thermal_controller::ThermalNodeData_V>("/thermal/nodes/state"));
 
   link_pub_ = std::make_shared<gz::transport::Node::Publisher>(
-    gz_node_.Advertise<gz::msgs::StringMsg_V>("/thermal/links/flux"));
+    gz_node_.Advertise<thermal_controller::ThermalLinkFlow_V>("/thermal/links/flux"));
 
   std::cout << "[ThermalPlugin] Configured with " << nodes_.size() << " nodes and " << links_.size() << " links.\n";
 }
@@ -119,8 +111,8 @@ void ThermalPlugin::PreUpdate(
   rk4_step(timestep_);
   last_time_ = sim_time;
 
-  thermal_control::msgs::ThermalNodeState_V
- node_msg;
+  // Publish node states
+  thermal_controller::ThermalNodeData_V node_msg;
   for (const auto &node : nodes_) {
     auto *entry = node_msg.add_states();
     entry->set_name(node.name);
@@ -130,15 +122,18 @@ void ThermalPlugin::PreUpdate(
   }
   node_pub_->Publish(node_msg);
 
-  gz::msgs::StringMsg_V link_msg;
+  // Publish heat flow between links
+  thermal_controller::ThermalLinkFlow_V link_msg;
   for (const auto &link : links_) {
     size_t i = node_index_[link.from];
     size_t j = node_index_[link.to];
     double q = link.conductance * (nodes_[i].temperature - nodes_[j].temperature);
 
-    std::ostringstream ss;
-    ss << link.from << " -> " << link.to << " | Q = " << q;
-    link_msg.add_data(ss.str());
+    auto *flow = link_msg.add_flows();
+    flow->set_from(link.from);
+    flow->set_to(link.to);
+    flow->set_conductance(link.conductance);
+    flow->set_heat_flow(q);
   }
   link_pub_->Publish(link_msg);
 }

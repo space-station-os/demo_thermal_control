@@ -384,6 +384,6 @@ set(CMAKE_MAKEFILE_PRODUCTS
 
 # Dependency information for all targets:
 set(CMAKE_DEPEND_INFO_FILES
-  "CMakeFiles/thermal_plugin-thermal_plugin-msgs.dir/DependInfo.cmake"
+  "CMakeFiles/thermal_control-msgs.dir/DependInfo.cmake"
   "CMakeFiles/ThermalPlugin.dir/DependInfo.cmake"
   )

@@ -26,8 +26,7 @@ set(msg_files
   "msg/InternalLoopStatus.msg"
   "msg/ExternalLoopStatus.msg"
   "srv/VentHeat.srv"
-  "msg/LinkHeatFlow.msg"
-  "msg/NodeTemperature.msg"
+  
   "srv/GetSubTopic.srv"
 )
 
@@ -50,9 +49,7 @@ ament_target_dependencies(radiator rosidl_default_generators rclcpp sensor_msgs 
 rosidl_target_interfaces(radiator ${PROJECT_NAME} "rosidl_typesupport_cpp")
 
 
-add_executable(thermal_node src/thermal_network.cpp)
-ament_target_dependencies(thermal_node rosidl_default_generators rclcpp sensor_msgs space_station_eclss)
-rosidl_target_interfaces(thermal_node ${PROJECT_NAME} "rosidl_typesupport_cpp")
+
 
 include_directories(include)
 
@@ -61,7 +58,7 @@ install(TARGETS
   coolant
   external_loop
   radiator
-  thermal_node
+
   DESTINATION lib/${PROJECT_NAME})
 
 install(DIRECTORY launch/

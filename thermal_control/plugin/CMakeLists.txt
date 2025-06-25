@@ -1,56 +1,58 @@
 cmake_minimum_required(VERSION 3.10)
-project(thermal_plugin)
+project(thermal_control)
 
-# Required packages
-find_package(Protobuf REQUIRED)
 find_package(gz-sim8 REQUIRED)
 find_package(gz-plugin2 REQUIRED)
 find_package(gz-common5 REQUIRED)
 find_package(gz-transport13 REQUIRED)
 find_package(gz-msgs10 REQUIRED)
 
-# Define proto files
-set(PROTO_FILES
-  ${CMAKE_CURRENT_SOURCE_DIR}/proto/thermal_control/msgs/ThermalNodeState.proto
+set(GZ_MSGS_VER ${gz-msgs10_VERSION_MAJOR})
+
+# Proto files for custom messages
+set(MSGS_PROTOS
+  ${CMAKE_CURRENT_SOURCE_DIR}/proto/thermal_controller/ThermalNodeData.proto
+  ${CMAKE_CURRENT_SOURCE_DIR}/proto/thermal_controller/ThermalLinkFlow.proto
 )
 
-# Generate custom messages
 gz_msgs_generate_messages(
-  TARGET thermal_plugin-msgs
-  PROTO_PACKAGE "thermal_control.msgs"
+  TARGET msgs
+  PROTO_PACKAGE "thermal_controller"
   MSGS_PATH ${CMAKE_CURRENT_SOURCE_DIR}/proto
-  MSGS_PROTOS ${PROTO_FILES}
-  DEPENDENCIES gz-msgs10::gz-msgs10
+  MSGS_PROTOS ${MSGS_PROTOS}
+  DEPENDENCIES gz-msgs${GZ_MSGS_VER}::gz-msgs${GZ_MSGS_VER}
 )
 
-# Plugin source
+# Build the plugin as a shared library
 add_library(ThermalPlugin SHARED
   thermal_plugin.cc
 )
 
 target_include_directories(ThermalPlugin PUBLIC
   ${CMAKE_CURRENT_SOURCE_DIR}
-  ${CMAKE_CURRENT_BINARY_DIR}/thermal_plugin-thermal_plugin-msgs_genmsg
+  ${CMAKE_CURRENT_BINARY_DIR}/thermal_control-msgs_genmsg
   ${Protobuf_INCLUDE_DIRS}
 )
 
-
-# Link dependencies
+add_dependencies(ThermalPlugin thermal_control-msgs)
+# Link against Gazebo and generated message targets
 target_link_libraries(ThermalPlugin
   gz-sim8::gz-sim8
   gz-plugin2::gz-plugin2
   gz-transport13::gz-transport13
   gz-common5::gz-common5
-  gz-msgs10::gz-msgs10
-  ${Protobuf_LIBRARIES}
+  gz-msgs${GZ_MSGS_VER}::gz-msgs${GZ_MSGS_VER}
+  thermal_control-msgs
 )
 
-# Output lib
+
 set_target_properties(ThermalPlugin PROPERTIES
   LIBRARY_OUTPUT_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/../lib
 )
 
-# Install
+# Installation instructions
 install(TARGETS ThermalPlugin
-  LIBRARY DESTINATION lib
+        LIBRARY DESTINATION lib
+        ARCHIVE DESTINATION lib
+        RUNTIME DESTINATION bin
 )
