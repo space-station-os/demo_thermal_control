@@ -1,0 +1,4 @@
+# Hashes of file build rules.
+115f57b0ea1391d2b6b2985af3193f0c thermal_plugin-thermal_plugin-msgs.gz_desc
+326b37fe780ee0dd2518769d453f282e thermal_plugin-thermal_plugin-msgs_genmsg/thermal_control/msgs/MessageTypes.hh
+6d813230ecb5bf1eb75fb0ffd58f198f thermal_plugin-thermal_plugin-msgs_genmsg/thermal_control/msgs/ThermalNodeState.pb.h

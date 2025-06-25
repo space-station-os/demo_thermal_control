@@ -1,0 +1,10 @@
+
+¸
++thermal_control/msgs/ThermalNodeState.protothermal_control.msgs"”
+ThermalNodeState
+name (	Rname 
+temperature (Rtemperature#
+heat_capacity (RheatCapacity%
+internal_power (RinternalPower"T
+ThermalNodeState_V>
+states (2&.thermal_control.msgs.ThermalNodeStateRstatesbproto3

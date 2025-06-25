@@ -28,7 +28,7 @@ void RadiatorController::handle_vent_request(
 
   if (heat > 35.0) {
     std_msgs::msg::Float64MultiArray cmd_msg;
-    cmd_msg.data.resize(10);  // 5 lsa + 5 rsa
+    cmd_msg.data.resize(6);  
 
     // Alternate target angle slightly
     double base_angle = 1.57;

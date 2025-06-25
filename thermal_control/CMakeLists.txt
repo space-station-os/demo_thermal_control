@@ -12,6 +12,7 @@ find_package(sensor_msgs REQUIRED)
 find_package(rosidl_default_generators REQUIRED)
 find_package(std_srvs REQUIRED)
 find_package(space_station_eclss REQUIRED)
+
 # uncomment the following section in order to fill in
 # further dependencies manually.
 # find_package(<dependency> REQUIRED)
@@ -25,6 +26,9 @@ set(msg_files
   "msg/InternalLoopStatus.msg"
   "msg/ExternalLoopStatus.msg"
   "srv/VentHeat.srv"
+  "msg/LinkHeatFlow.msg"
+  "msg/NodeTemperature.msg"
+  "srv/GetSubTopic.srv"
 )
 
 rosidl_generate_interfaces(${PROJECT_NAME}
@@ -45,6 +49,11 @@ add_executable(radiator src/radiators.cpp)
 ament_target_dependencies(radiator rosidl_default_generators rclcpp sensor_msgs space_station_eclss)
 rosidl_target_interfaces(radiator ${PROJECT_NAME} "rosidl_typesupport_cpp")
 
+
+add_executable(thermal_node src/thermal_network.cpp)
+ament_target_dependencies(thermal_node rosidl_default_generators rclcpp sensor_msgs space_station_eclss)
+rosidl_target_interfaces(thermal_node ${PROJECT_NAME} "rosidl_typesupport_cpp")
+
 include_directories(include)
 
 
@@ -52,15 +61,22 @@ install(TARGETS
   coolant
   external_loop
   radiator
+  thermal_node
   DESTINATION lib/${PROJECT_NAME})
 
 install(DIRECTORY launch/
   DESTINATION share/${PROJECT_NAME}/launch
 )
 
-# install(DIRECTORY config/
-#   DESTINATION share/${PROJECT_NAME}/launch
-# )
+install(DIRECTORY config/
+  DESTINATION share/${PROJECT_NAME}/config
+)
+
+
+add_subdirectory(plugin)
+
+include_directories(${CMAKE_CURRENT_BINARY_DIR})
+
 
 if(BUILD_TESTING)
   find_package(ament_lint_auto REQUIRED)

@@ -1,0 +1,151 @@
+#include "thermal_plugin.hh"
+
+#include <gz/sim/Model.hh>
+#include <gz/sim/Link.hh>
+#include <gz/sim/Util.hh>
+#include <gz/sim/components/Name.hh>
+#include <gz/msgs/stringmsg_v.pb.h>
+
+#include "thermal_control/msgs/ThermalNodeState.pb.h"
+
+
+using namespace spacestation;
+
+ThermalPlugin::ThermalPlugin() {}
+
+void ThermalPlugin::Configure(
+  const gz::sim::Entity &entity,
+  const std::shared_ptr<const sdf::Element> & /*sdf*/,
+  gz::sim::EntityComponentManager &ecm,
+  gz::sim::EventManager & /*eventMgr*/)
+{
+  gz::sim::Model model(entity);
+  if (!model.Valid(ecm)) {
+    std::cerr << "[ThermalPlugin] Invalid model entity." << std::endl;
+    return;
+  }
+
+  auto links = model.Links(ecm);
+  for (const auto &link : links) {
+    auto name = gz::sim::scopedName(link, ecm, "/", false);
+
+    ThermalNode node;
+    node.name = name;
+    node.temperature = 290.0 + static_cast<double>(rand() % 1000) / 100.0;
+    node.heat_capacity = 1000.0;
+    node.internal_power = 0.0;
+
+    node_index_[name] = nodes_.size();
+    nodes_.push_back(node);
+  }
+
+  for (size_t i = 0; i < nodes_.size(); ++i) {
+    for (size_t j = i + 1; j < nodes_.size(); ++j) {
+      ThermalLink link;
+      link.from = nodes_[i].name;
+      link.to = nodes_[j].name;
+      link.conductance = 0.05;
+      links_.push_back(link);
+    }
+  }
+
+  node_pub_ = std::make_shared<gz::transport::Node::Publisher>(
+    gz_node_.Advertise<thermal_control::msgs::ThermalNodeState_V
+>("/thermal/nodes/state"));
+
+  link_pub_ = std::make_shared<gz::transport::Node::Publisher>(
+    gz_node_.Advertise<gz::msgs::StringMsg_V>("/thermal/links/flux"));
+
+  std::cout << "[ThermalPlugin] Configured with " << nodes_.size() << " nodes and " << links_.size() << " links.\n";
+}
+
+void ThermalPlugin::rk4_step(double dt)
+{
+  std::vector<double> k1(nodes_.size(), 0.0);
+  std::vector<double> k2(nodes_.size(), 0.0);
+  std::vector<double> k3(nodes_.size(), 0.0);
+  std::vector<double> k4(nodes_.size(), 0.0);
+
+  auto compute_derivative = [&](std::vector<double> &dT, const std::vector<double> &temp) {
+    for (auto &v : dT) v = 0.0;
+
+    for (const auto &link : links_) {
+      size_t i = node_index_[link.from];
+      size_t j = node_index_[link.to];
+      double deltaT = temp[i] - temp[j];
+      double q = link.conductance * deltaT;
+
+      dT[i] -= q / nodes_[i].heat_capacity;
+      dT[j] += q / nodes_[j].heat_capacity;
+    }
+
+    for (size_t i = 0; i < nodes_.size(); ++i)
+      dT[i] += nodes_[i].internal_power / nodes_[i].heat_capacity;
+  };
+
+  std::vector<double> temp0(nodes_.size());
+  for (size_t i = 0; i < nodes_.size(); ++i)
+    temp0[i] = nodes_[i].temperature;
+
+  compute_derivative(k1, temp0);
+  std::vector<double> temp1 = temp0;
+  for (size_t i = 0; i < temp1.size(); ++i)
+    temp1[i] += 0.5 * dt * k1[i];
+
+  compute_derivative(k2, temp1);
+  std::vector<double> temp2 = temp0;
+  for (size_t i = 0; i < temp2.size(); ++i)
+    temp2[i] += 0.5 * dt * k2[i];
+
+  compute_derivative(k3, temp2);
+  std::vector<double> temp3 = temp0;
+  for (size_t i = 0; i < temp3.size(); ++i)
+    temp3[i] += dt * k3[i];
+
+  compute_derivative(k4, temp3);
+
+  for (size_t i = 0; i < nodes_.size(); ++i)
+    nodes_[i].temperature += (dt / 6.0) * (k1[i] + 2 * k2[i] + 2 * k3[i] + k4[i]);
+}
+
+void ThermalPlugin::PreUpdate(
+  const gz::sim::UpdateInfo &info,
+  gz::sim::EntityComponentManager & /*ecm*/)
+{
+  double sim_time = std::chrono::duration<double>(info.simTime).count();
+  if (sim_time - last_time_ < timestep_)
+    return;
+
+  rk4_step(timestep_);
+  last_time_ = sim_time;
+
+  thermal_control::msgs::ThermalNodeState_V
+ node_msg;
+  for (const auto &node : nodes_) {
+    auto *entry = node_msg.add_states();
+    entry->set_name(node.name);
+    entry->set_temperature(node.temperature);
+    entry->set_heat_capacity(node.heat_capacity);
+    entry->set_internal_power(node.internal_power);
+  }
+  node_pub_->Publish(node_msg);
+
+  gz::msgs::StringMsg_V link_msg;
+  for (const auto &link : links_) {
+    size_t i = node_index_[link.from];
+    size_t j = node_index_[link.to];
+    double q = link.conductance * (nodes_[i].temperature - nodes_[j].temperature);
+
+    std::ostringstream ss;
+    ss << link.from << " -> " << link.to << " | Q = " << q;
+    link_msg.add_data(ss.str());
+  }
+  link_pub_->Publish(link_msg);
+}
+
+GZ_ADD_PLUGIN(
+  spacestation::ThermalPlugin,
+  gz::sim::System,
+  spacestation::ThermalPlugin::ISystemConfigure,
+  spacestation::ThermalPlugin::ISystemPreUpdate
+)
