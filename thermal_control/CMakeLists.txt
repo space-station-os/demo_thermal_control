@@ -52,6 +52,9 @@ add_executable(radiator src/radiators.cpp)
 ament_target_dependencies(radiator rosidl_default_generators rclcpp sensor_msgs space_station_eclss)
 rosidl_target_interfaces(radiator ${PROJECT_NAME} "rosidl_typesupport_cpp")
 
+add_executable(demand src/on_demand_publisher.cpp)
+ament_target_dependencies(demand rosidl_default_generators rclcpp sensor_msgs space_station_eclss)
+rosidl_target_interfaces(demand ${PROJECT_NAME} "rosidl_typesupport_cpp")
 
 
 
@@ -62,7 +65,7 @@ install(TARGETS
   coolant
   external_loop
   radiator
-
+  demand
   DESTINATION lib/${PROJECT_NAME})
 
 install(DIRECTORY launch/
