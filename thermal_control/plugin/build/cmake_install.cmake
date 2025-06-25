@@ -112,7 +112,7 @@ if("x${CMAKE_INSTALL_COMPONENT}x" STREQUAL "xUnspecifiedx" OR NOT CMAKE_INSTALL_
      NOT IS_SYMLINK "$ENV{DESTDIR}${CMAKE_INSTALL_PREFIX}/lib/libThermalPlugin.so")
     file(RPATH_CHANGE
          FILE "$ENV{DESTDIR}${CMAKE_INSTALL_PREFIX}/lib/libThermalPlugin.so"
-         OLD_RPATH "/home/siddarth/ssos_ws/src/demo_thermal_control/thermal_control/plugin/build:"
+         OLD_RPATH "/home/siddarth/ssos_ws/src/demo_thermal_control/thermal_control/plugin/build:/opt/ros/humble/lib:/home/siddarth/ssos_ws/install/thermal_control/lib:/home/siddarth/ssos_ws/install/space_station_eclss/lib:"
          NEW_RPATH "")
     if(CMAKE_INSTALL_DO_STRIP)
       execute_process(COMMAND "/usr/bin/strip" "$ENV{DESTDIR}${CMAKE_INSTALL_PREFIX}/lib/libThermalPlugin.so")

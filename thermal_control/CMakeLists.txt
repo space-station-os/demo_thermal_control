@@ -26,7 +26,10 @@ set(msg_files
   "msg/InternalLoopStatus.msg"
   "msg/ExternalLoopStatus.msg"
   "srv/VentHeat.srv"
-  
+  "msg/ThermalLinkFlows.msg"
+  "msg/ThermalLinkFlowsArray.msg"
+  "msg/ThermalNodeData.msg"
+  "msg/ThermalNodeDataArray.msg"
   "srv/GetSubTopic.srv"
 )
 
@@ -35,6 +38,7 @@ rosidl_generate_interfaces(${PROJECT_NAME}
   DEPENDENCIES  std_msgs sensor_msgs space_station_eclss
 )
 
+ament_export_dependencies(rosidl_default_runtime)
 
 add_executable(coolant src/coolant.cpp)
 ament_target_dependencies(coolant rosidl_default_generators rclcpp  std_srvs space_station_eclss)

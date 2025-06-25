@@ -19,6 +19,9 @@
 #include <thermal_controller/ThermalNodeData.pb.h>
 #include <thermal_controller/ThermalLinkFlow.pb.h>
 
+#include "rclcpp/rclcpp.hpp"
+#include "thermal_control/msg/thermal_node_data_array.hpp"
+#include "thermal_control/msg/thermal_link_flows_array.hpp"
 
 namespace spacestation {
 
@@ -50,9 +53,17 @@ public:
 
   void PreUpdate(const gz::sim::UpdateInfo &info,
                  gz::sim::EntityComponentManager &ecm) override;
+  ~ThermalPlugin() {
+      if (ros_spin_thread_.joinable())
+        ros_spin_thread_.join();
+      if (rclcpp::ok())
+        rclcpp::shutdown();
+    }
+
 
 private:
   void rk4_step(double dt);
+  std::thread ros_spin_thread_;
 
   gz::transport::Node gz_node_;
   std::shared_ptr<gz::transport::Node::Publisher> node_pub_;
@@ -61,6 +72,11 @@ private:
   std::vector<ThermalNode> nodes_;
   std::vector<ThermalLink> links_;
   std::unordered_map<std::string, size_t> node_index_;
+
+  std::shared_ptr<rclcpp::Node> ros_node_;
+  rclcpp::Publisher<thermal_control::msg::ThermalNodeDataArray>::SharedPtr ros_node_pub_;
+  rclcpp::Publisher<thermal_control::msg::ThermalLinkFlowsArray>::SharedPtr ros_link_pub_;
+
 
   double timestep_ = 0.1;
   double last_time_ = 0.0;

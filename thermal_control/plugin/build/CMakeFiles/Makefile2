@@ -72,9 +72,63 @@ preinstall:
 .PHONY : preinstall
 
 # The main recursive "clean" target.
+clean: CMakeFiles/uninstall.dir/clean
+clean: CMakeFiles/thermal_control_uninstall.dir/clean
 clean: CMakeFiles/thermal_control-msgs.dir/clean
 clean: CMakeFiles/ThermalPlugin.dir/clean
 .PHONY : clean
+
+#=============================================================================
+# Target rules for target CMakeFiles/uninstall.dir
+
+# All Build rule for target.
+CMakeFiles/uninstall.dir/all: CMakeFiles/thermal_control_uninstall.dir/all
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/uninstall.dir/build.make CMakeFiles/uninstall.dir/depend
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/uninstall.dir/build.make CMakeFiles/uninstall.dir/build
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --progress-dir=/home/siddarth/ssos_ws/src/demo_thermal_control/thermal_control/plugin/build/CMakeFiles --progress-num= "Built target uninstall"
+.PHONY : CMakeFiles/uninstall.dir/all
+
+# Build rule for subdir invocation for target.
+CMakeFiles/uninstall.dir/rule: cmake_check_build_system
+	$(CMAKE_COMMAND) -E cmake_progress_start /home/siddarth/ssos_ws/src/demo_thermal_control/thermal_control/plugin/build/CMakeFiles 0
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/Makefile2 CMakeFiles/uninstall.dir/all
+	$(CMAKE_COMMAND) -E cmake_progress_start /home/siddarth/ssos_ws/src/demo_thermal_control/thermal_control/plugin/build/CMakeFiles 0
+.PHONY : CMakeFiles/uninstall.dir/rule
+
+# Convenience name for target.
+uninstall: CMakeFiles/uninstall.dir/rule
+.PHONY : uninstall
+
+# clean rule for target.
+CMakeFiles/uninstall.dir/clean:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/uninstall.dir/build.make CMakeFiles/uninstall.dir/clean
+.PHONY : CMakeFiles/uninstall.dir/clean
+
+#=============================================================================
+# Target rules for target CMakeFiles/thermal_control_uninstall.dir
+
+# All Build rule for target.
+CMakeFiles/thermal_control_uninstall.dir/all:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/thermal_control_uninstall.dir/build.make CMakeFiles/thermal_control_uninstall.dir/depend
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/thermal_control_uninstall.dir/build.make CMakeFiles/thermal_control_uninstall.dir/build
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --progress-dir=/home/siddarth/ssos_ws/src/demo_thermal_control/thermal_control/plugin/build/CMakeFiles --progress-num= "Built target thermal_control_uninstall"
+.PHONY : CMakeFiles/thermal_control_uninstall.dir/all
+
+# Build rule for subdir invocation for target.
+CMakeFiles/thermal_control_uninstall.dir/rule: cmake_check_build_system
+	$(CMAKE_COMMAND) -E cmake_progress_start /home/siddarth/ssos_ws/src/demo_thermal_control/thermal_control/plugin/build/CMakeFiles 0
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/Makefile2 CMakeFiles/thermal_control_uninstall.dir/all
+	$(CMAKE_COMMAND) -E cmake_progress_start /home/siddarth/ssos_ws/src/demo_thermal_control/thermal_control/plugin/build/CMakeFiles 0
+.PHONY : CMakeFiles/thermal_control_uninstall.dir/rule
+
+# Convenience name for target.
+thermal_control_uninstall: CMakeFiles/thermal_control_uninstall.dir/rule
+.PHONY : thermal_control_uninstall
+
+# clean rule for target.
+CMakeFiles/thermal_control_uninstall.dir/clean:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/thermal_control_uninstall.dir/build.make CMakeFiles/thermal_control_uninstall.dir/clean
+.PHONY : CMakeFiles/thermal_control_uninstall.dir/clean
 
 #=============================================================================
 # Target rules for target CMakeFiles/thermal_control-msgs.dir

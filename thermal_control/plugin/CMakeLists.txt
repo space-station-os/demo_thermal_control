@@ -6,7 +6,11 @@ find_package(gz-plugin2 REQUIRED)
 find_package(gz-common5 REQUIRED)
 find_package(gz-transport13 REQUIRED)
 find_package(gz-msgs10 REQUIRED)
-
+find_package(ament_cmake REQUIRED)
+find_package(rclcpp REQUIRED)
+find_package(sensor_msgs REQUIRED)
+find_package(rosidl_default_generators REQUIRED)
+find_package(thermal_control REQUIRED)
 set(GZ_MSGS_VER ${gz-msgs10_VERSION_MAJOR})
 
 # Proto files for custom messages
@@ -43,8 +47,13 @@ target_link_libraries(ThermalPlugin
   gz-common5::gz-common5
   gz-msgs${GZ_MSGS_VER}::gz-msgs${GZ_MSGS_VER}
   thermal_control-msgs
+  
 )
 
+ament_target_dependencies(ThermalPlugin
+        rclcpp
+        thermal_control 
+        )
 
 set_target_properties(ThermalPlugin PROPERTIES
   LIBRARY_OUTPUT_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/../lib

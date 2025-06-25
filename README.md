@@ -110,3 +110,28 @@ source install/setup.bash
 ros2 launch thermal_control thermals.launch.py
 ```
 
+# UPDATE 
+
+add this in bashrc 
+
+export GZ_SIM_SYSTEM_PLUGIN_PATH=$GZ_SIM_SYSTEM_PLUGIN_PATH:$HOME/ssos_ws/install/thermal_control/lib
+export GZ_DESCRIPTOR_PATH=$GZ_DESCRIPTOR_PATH:$HOME/ssos_ws/src/demo_thermal_control/thermal_control/plugin/build
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

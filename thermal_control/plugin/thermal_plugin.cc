@@ -47,6 +47,24 @@ void ThermalPlugin::Configure(
 
   link_pub_ = std::make_shared<gz::transport::Node::Publisher>(
     gz_node_.Advertise<thermal_controller::ThermalLinkFlow_V>("/thermal/links/flux"));
+  
+
+  if (!rclcpp::ok()) {
+    int argc = 0;
+    char **argv = nullptr;
+    rclcpp::init(argc, argv);
+  }
+  ros_node_ = std::make_shared<rclcpp::Node>("thermal_plugin_node");
+
+  ros_node_pub_ = ros_node_->create_publisher<thermal_control::msg::ThermalNodeDataArray>(
+    "/thermal/nodes/state", 10);
+  ros_link_pub_ = ros_node_->create_publisher<thermal_control::msg::ThermalLinkFlowsArray>(
+    "/thermal/links/flux", 10);
+
+  ros_spin_thread_ = std::thread([this]() {
+      rclcpp::spin(this->ros_node_);
+    });
+
 
   std::cout << "[ThermalPlugin] Configured with " << nodes_.size() << " nodes and " << links_.size() << " links.\n";
 }
@@ -136,6 +154,34 @@ void ThermalPlugin::PreUpdate(
     flow->set_heat_flow(q);
   }
   link_pub_->Publish(link_msg);
+
+
+  thermal_control::msg::ThermalNodeDataArray ros_node_msg;
+  for (const auto &node : nodes_) {
+    thermal_control::msg::ThermalNodeData entry;
+    entry.name = node.name;
+    entry.temperature = node.temperature;
+    entry.heat_capacity = node.heat_capacity;
+    entry.internal_power = node.internal_power;
+    ros_node_msg.nodes.push_back(entry);
+  }
+  ros_node_pub_->publish(ros_node_msg);
+
+  thermal_control::msg::ThermalLinkFlowsArray ros_link_msg;
+  for (const auto &link : links_) {
+    size_t i = node_index_[link.from];
+    size_t j = node_index_[link.to];
+    double q = link.conductance * (nodes_[i].temperature - nodes_[j].temperature);
+
+    thermal_control::msg::ThermalLinkFlows flow;
+    flow.node_a = link.from;
+    flow.node_b = link.to;
+    flow.conductance = link.conductance;
+    flow.heat_flow = q;
+    ros_link_msg.links.push_back(flow);
+  }
+  ros_link_pub_->publish(ros_link_msg);
+
 }
 
 GZ_ADD_PLUGIN(
