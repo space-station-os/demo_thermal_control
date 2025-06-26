@@ -10,7 +10,7 @@ find_package(ament_cmake REQUIRED)
 find_package(rclcpp REQUIRED)
 find_package(sensor_msgs REQUIRED)
 find_package(rosidl_default_generators REQUIRED)
-find_package(thermal_control REQUIRED)
+#find_package(thermal_control REQUIRED)
 set(GZ_MSGS_VER ${gz-msgs10_VERSION_MAJOR})
 
 # Proto files for custom messages
@@ -50,10 +50,18 @@ target_link_libraries(ThermalPlugin
   
 )
 
+
 ament_target_dependencies(ThermalPlugin
-        rclcpp
-        thermal_control 
-        )
+  rclcpp
+  sensor_msgs
+  rosidl_default_runtime
+  #thermal_control 
+)
+
+# Ensure ROS2 message interfaces are linked
+rosidl_target_interfaces(ThermalPlugin
+  thermal_control "rosidl_typesupport_cpp"
+)
 
 set_target_properties(ThermalPlugin PROPERTIES
   LIBRARY_OUTPUT_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/../lib

@@ -180,7 +180,7 @@ CMAKE_PROJECT_DESCRIPTION:STATIC=
 CMAKE_PROJECT_HOMEPAGE_URL:STATIC=
 
 //Value Computed by CMake
-CMAKE_PROJECT_NAME:STATIC=thermal_control
+CMAKE_PROJECT_NAME:STATIC=thermal_control_plugin
 
 //Path to a program.
 CMAKE_RANLIB:FILEPATH=/usr/bin/ranlib
@@ -361,6 +361,9 @@ Protobuf_PROTOC_LIBRARY_DEBUG:FILEPATH=/usr/lib/x86_64-linux-gnu/libprotoc.so
 //Path to a library.
 Protobuf_PROTOC_LIBRARY_RELEASE:FILEPATH=/usr/lib/x86_64-linux-gnu/libprotoc.so
 
+//Path to a program.
+Python3_EXECUTABLE:FILEPATH=/usr/bin/python3
+
 //The directory containing a CMake configuration file for Qt5Core.
 Qt5Core_DIR:PATH=/usr/lib/x86_64-linux-gnu/cmake/Qt5Core
 
@@ -398,7 +401,7 @@ SWSCALE_LIBRARY_swscale:FILEPATH=/usr/lib/x86_64-linux-gnu/libswscale.so
 TINYXML2_LIBRARY_tinyxml2:FILEPATH=/usr/lib/x86_64-linux-gnu/libtinyxml2.so
 
 //Dependencies for the target
-ThermalPlugin_LIB_DEPENDS:STATIC=general;gz-sim8::gz-sim8;general;gz-plugin2::gz-plugin2;general;gz-transport13::gz-transport13;general;gz-common5::gz-common5;general;gz-msgs10::gz-msgs10;general;thermal_control-msgs;general;rclcpp;general;rclcpp::rclcpp;general;thermal_control::thermal_control__rosidl_generator_c;general;thermal_control::thermal_control__rosidl_typesupport_fastrtps_c;general;thermal_control::thermal_control__rosidl_typesupport_fastrtps_cpp;general;thermal_control::thermal_control__rosidl_typesupport_introspection_c;general;thermal_control::thermal_control__rosidl_typesupport_c;general;thermal_control::thermal_control__rosidl_typesupport_introspection_cpp;general;thermal_control::thermal_control__rosidl_typesupport_cpp;general;thermal_control::thermal_control__rosidl_generator_py;
+ThermalPlugin_LIB_DEPENDS:STATIC=general;gz-sim8::gz-sim8;general;gz-plugin2::gz-plugin2;general;gz-transport13::gz-transport13;general;gz-common5::gz-common5;general;gz-msgs10::gz-msgs10;general;thermal_control-msgs;general;rclcpp::rclcpp;
 
 //The directory containing a CMake configuration file for TinyXML2.
 TinyXML2_DIR:PATH=TinyXML2_DIR-NOTFOUND
@@ -416,7 +419,7 @@ ZeroMQ_DIR:PATH=ZeroMQ_DIR-NOTFOUND
 ZeroMQ_LIBRARY_zmq:FILEPATH=/usr/lib/x86_64-linux-gnu/libzmq.so
 
 //Path to a library.
-_lib:FILEPATH=/home/siddarth/ssos_ws/install/thermal_control/lib/libthermal_control__rosidl_typesupport_fastrtps_cpp.so
+_lib:FILEPATH=/opt/ros/humble/lib/libsensor_msgs__rosidl_typesupport_fastrtps_cpp.so
 
 //The directory containing a CMake configuration file for ament_cmake.
 ament_cmake_DIR:PATH=/opt/ros/humble/share/ament_cmake/cmake
@@ -790,9 +793,6 @@ sdformat14_DIR:PATH=/usr/lib/x86_64-linux-gnu/cmake/sdformat14
 //The directory containing a CMake configuration file for sensor_msgs.
 sensor_msgs_DIR:PATH=/opt/ros/humble/share/sensor_msgs/cmake
 
-//The directory containing a CMake configuration file for space_station_eclss.
-space_station_eclss_DIR:PATH=/home/siddarth/ssos_ws/install/space_station_eclss/share/space_station_eclss/cmake
-
 //The directory containing a CMake configuration file for spdlog.
 spdlog_DIR:PATH=/usr/lib/x86_64-linux-gnu/cmake/spdlog
 
@@ -808,14 +808,11 @@ std_msgs_DIR:PATH=/opt/ros/humble/share/std_msgs/cmake
 //Dependencies for the target
 thermal_control-msgs_LIB_DEPENDS:STATIC=general;protobuf::libprotobuf;general;gz-msgs10::gz-msgs10;general;gz-msgs10::gz-msgs10;
 
-//Dependencies for the target
-thermal_control-thermal_control-thermal_control_msgs_LIB_DEPENDS:STATIC=general;protobuf::libprotobuf;general;gz-msgs10::gz-msgs10;general;gz-msgs10::gz-msgs10;
-
 //Value Computed by CMake
 thermal_control_BINARY_DIR:STATIC=/home/siddarth/ssos_ws/src/demo_thermal_control/thermal_control/plugin/build
 
 //The directory containing a CMake configuration file for thermal_control.
-thermal_control_DIR:PATH=/home/siddarth/ssos_ws/install/thermal_control/share/thermal_control/cmake
+thermal_control_DIR:PATH=thermal_control_DIR-NOTFOUND
 
 //Value Computed by CMake
 thermal_control_IS_TOP_LEVEL:STATIC=ON
@@ -823,11 +820,17 @@ thermal_control_IS_TOP_LEVEL:STATIC=ON
 //Value Computed by CMake
 thermal_control_SOURCE_DIR:STATIC=/home/siddarth/ssos_ws/src/demo_thermal_control/thermal_control/plugin
 
+//Value Computed by CMake
+thermal_control_plugin_BINARY_DIR:STATIC=/home/siddarth/ssos_ws/src/demo_thermal_control/thermal_control/plugin/build
+
+//Value Computed by CMake
+thermal_control_plugin_IS_TOP_LEVEL:STATIC=ON
+
+//Value Computed by CMake
+thermal_control_plugin_SOURCE_DIR:STATIC=/home/siddarth/ssos_ws/src/demo_thermal_control/thermal_control/plugin
+
 //The directory containing a CMake configuration file for tracetools.
 tracetools_DIR:PATH=/opt/ros/humble/share/tracetools/cmake
-
-//The directory containing a CMake configuration file for visualization_msgs.
-visualization_msgs_DIR:PATH=/opt/ros/humble/share/visualization_msgs/cmake
 
 //The directory containing a CMake configuration file for yaml.
 yaml_DIR:PATH=/opt/ros/humble/cmake
@@ -1167,7 +1170,7 @@ FIND_PACKAGE_MESSAGE_DETAILS_OpenSSL:INTERNAL=[/usr/lib/x86_64-linux-gnu/libcryp
 //Details about finding Protobuf
 FIND_PACKAGE_MESSAGE_DETAILS_Protobuf:INTERNAL=[/usr/lib/x86_64-linux-gnu/libprotobuf.so][/usr/include][v3.12.4()]
 //Details about finding Python3
-FIND_PACKAGE_MESSAGE_DETAILS_Python3:INTERNAL=[/usr/bin/python3.10][cfound components: Interpreter ][v3.10.12()]
+FIND_PACKAGE_MESSAGE_DETAILS_Python3:INTERNAL=[/usr/bin/python3][cfound components: Interpreter ][v3.10.12()]
 //Details about finding SWSCALE
 FIND_PACKAGE_MESSAGE_DETAILS_SWSCALE:INTERNAL=[TRUE][v()]
 //Details about finding Threads
@@ -1504,10 +1507,10 @@ _OPENSSL_openssl_INCLUDEDIR:INTERNAL=
 _OPENSSL_openssl_LIBDIR:INTERNAL=
 _OPENSSL_openssl_PREFIX:INTERNAL=
 _OPENSSL_openssl_VERSION:INTERNAL=
-_Python3_EXECUTABLE:INTERNAL=/usr/bin/python3.10
+_Python3_EXECUTABLE:INTERNAL=/usr/bin/python3
 //Python3 Properties
 _Python3_INTERPRETER_PROPERTIES:INTERNAL=Python;3;10;12;64;;cpython-310-x86_64-linux-gnu;/usr/lib/python3.10;/usr/lib/python3.10;/usr/lib/python3/dist-packages;/usr/lib/python3/dist-packages
-_Python3_INTERPRETER_SIGNATURE:INTERNAL=b91b4035ecb3bb3f5760d35922531bcd
+_Python3_INTERPRETER_SIGNATURE:INTERNAL=0f3e53742e142b1d9e50e4ca5b901dd8
 __pkg_config_arguments_AVCODEC:INTERNAL=libavcodec
 __pkg_config_arguments_AVDEVICE:INTERNAL=libavdevice >= 56.4.100
 __pkg_config_arguments_AVFORMAT:INTERNAL=libavformat

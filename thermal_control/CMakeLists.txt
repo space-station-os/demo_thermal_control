@@ -77,9 +77,7 @@ install(DIRECTORY config/
 )
 
 
-add_subdirectory(plugin)
 
-include_directories(${CMAKE_CURRENT_BINARY_DIR})
 
 
 if(BUILD_TESTING)
@@ -95,3 +93,7 @@ if(BUILD_TESTING)
 endif()
 
 ament_package()
+
+add_subdirectory(plugin)
+
+include_directories(${CMAKE_CURRENT_BINARY_DIR})

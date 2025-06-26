@@ -14,7 +14,7 @@
 #include <gz/sim/Link.hh>
 #include <gz/sim/Util.hh>
 #include <gz/sim/components/Name.hh>
-#include <google/protobuf/text_format.h>
+
 
 #include <thermal_controller/ThermalNodeData.pb.h>
 #include <thermal_controller/ThermalLinkFlow.pb.h>
