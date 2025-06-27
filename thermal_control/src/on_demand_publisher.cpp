@@ -55,7 +55,7 @@ void FocusNodeMonitor::handle_focus_request(
     RCLCPP_INFO(this->get_logger(), "Created topic: %s", topic.c_str());
   }
 
-  focused_names_.insert(name);  // Mark this node as to be published continuously
+  focused_names_.insert(name);  
 
   response->success = true;
   response->message = "Now publishing ongoing data for node '" + name + "' on /thermal/nodes/" + name;
