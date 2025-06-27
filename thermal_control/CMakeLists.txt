@@ -11,47 +11,74 @@ find_package(rclcpp REQUIRED)
 find_package(sensor_msgs REQUIRED)
 find_package(rosidl_default_generators REQUIRED)
 find_package(std_srvs REQUIRED)
+find_package(space_station_eclss REQUIRED)
+
 # uncomment the following section in order to fill in
 # further dependencies manually.
 # find_package(<dependency> REQUIRED)
 
-set(msg_files
-  "srv/Cooling.srv"
-  "msg/ATCS.msg"
 
+set(msg_files
+
+  "msg/TankStatus.msg"
+  "srv/CoolantFlow.srv"
+  "srv/InternalLoop.srv"
+  "msg/InternalLoopStatus.msg"
+  "msg/ExternalLoopStatus.msg"
+  "srv/VentHeat.srv"
+  "msg/ThermalLinkFlows.msg"
+  "msg/ThermalLinkFlowsArray.msg"
+  "msg/ThermalNodeData.msg"
+  "msg/ThermalNodeDataArray.msg"
+  "srv/GetSubTopic.srv"
 )
 
 rosidl_generate_interfaces(${PROJECT_NAME}
   ${msg_files} 
-  DEPENDENCIES  std_msgs sensor_msgs
+  DEPENDENCIES  std_msgs sensor_msgs space_station_eclss
 )
+
+ament_export_dependencies(rosidl_default_runtime)
+
+add_executable(coolant src/coolant.cpp)
+ament_target_dependencies(coolant rosidl_default_generators rclcpp  std_srvs space_station_eclss)
+rosidl_target_interfaces(coolant ${PROJECT_NAME} "rosidl_typesupport_cpp")
+
+add_executable(external_loop src/external_loop.cpp)
+ament_target_dependencies(external_loop rosidl_default_generators rclcpp sensor_msgs space_station_eclss)
+rosidl_target_interfaces(external_loop ${PROJECT_NAME} "rosidl_typesupport_cpp")
+
+add_executable(radiator src/radiators.cpp)
+ament_target_dependencies(radiator rosidl_default_generators rclcpp sensor_msgs space_station_eclss)
+rosidl_target_interfaces(radiator ${PROJECT_NAME} "rosidl_typesupport_cpp")
+
+add_executable(demand src/on_demand_publisher.cpp)
+ament_target_dependencies(demand rosidl_default_generators rclcpp sensor_msgs space_station_eclss)
+rosidl_target_interfaces(demand ${PROJECT_NAME} "rosidl_typesupport_cpp")
 
 
 
 include_directories(include)
 
-add_executable(coldplate_system src/temp_publish_node.cpp)
-ament_target_dependencies(coldplate_system std_srvs rosidl_default_generators rclcpp sensor_msgs)
-
-rosidl_target_interfaces(coldplate_system ${PROJECT_NAME} "rosidl_typesupport_cpp")
-
-
-add_executable(cooling_process src/cooling_system_server.cpp)
-ament_target_dependencies(cooling_process std_srvs rosidl_default_generators rclcpp sensor_msgs)
-rosidl_target_interfaces(cooling_process ${PROJECT_NAME} "rosidl_typesupport_cpp")
 
 install(TARGETS
-  coldplate_system
-  cooling_process
+  coolant
+  external_loop
+  radiator
+  demand
   DESTINATION lib/${PROJECT_NAME})
 
 install(DIRECTORY launch/
   DESTINATION share/${PROJECT_NAME}/launch
 )
 
-# install(DIRECTORY config/
-#   DESTINATION share/${PROJECT_NAME}/launch
-# )
+install(DIRECTORY config/
+  DESTINATION share/${PROJECT_NAME}/config
+)
+
+
+
+
 
 if(BUILD_TESTING)
   find_package(ament_lint_auto REQUIRED)
@@ -66,3 +93,7 @@ if(BUILD_TESTING)
 endif()
 
 ament_package()
+
+add_subdirectory(plugin)
+
+include_directories(${CMAKE_CURRENT_BINARY_DIR})
