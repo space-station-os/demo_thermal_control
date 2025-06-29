@@ -94,6 +94,35 @@ Listens for radiator venting requests and visually rotates solar panel joints.
 
 ## 🛠️ How to Build
 
+### Prerequisites
+
+This package depends on [Gazebo Harmonic (gz-sim8)](https://gazebosim.org/docs/harmonic).  
+If not already installed, add the OSRF Gazebo repository and install it using the steps below:
+
+```bash
+# Add OSRF GPG key
+sudo apt install curl gnupg lsb-release
+sudo mkdir -p /etc/apt/keyrings
+curl -fsSL https://packages.osrfoundation.org/gazebo.key | gpg --dearmor | sudo tee /etc/apt/keyrings/gazebo-archive-keyring.gpg > /dev/null
+
+# Add the repository
+echo "deb [signed-by=/etc/apt/keyrings/gazebo-archive-keyring.gpg] https://packages.osrfoundation.org/gazebo/ubuntu $(lsb_release -cs) main" | sudo tee /etc/apt/sources.list.d/gazebo.list > /dev/null
+
+# Update and install
+sudo apt update
+sudo apt install gz-harmonic
+```
+
+Make sure the following command is available after installation:
+
+```bash
+gz sim
+```
+
+### Body part
+
+Assuming you work in ~/ssos_ws, 
+
 ```bash
 cd ~/ssos_ws
 colcon build --packages-select thermal_control
