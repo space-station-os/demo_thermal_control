@@ -24,7 +24,7 @@ Current Thermal controls consists of thermal nodes and links which it reads from
 
 ##### LAUNCH 
 
-```
+```bash
 sudo apt-get install tmux
 tmux new -s gz -d "ros2 launch space_station_description gazebo.launch.py" 
 ```
@@ -35,6 +35,14 @@ This should give you two topics
 /thermal/links/flux
 /thermal/nodes/state
 ```
+### To run full launch 
+
+```bash
+tmux new -s gz -d "ros2 launch space_station_description gazebo.launch.py"
+tmux new -s eclss -d "ros2 launch space_station_eclss wrs_systems_v2.launch.py"
+tmux new -s thermals -d "ros2 launch thermal_control thermals.launch.py"
+```
+
 
 
 
