@@ -31,6 +31,7 @@ set(msg_files
   "msg/ThermalNodeData.msg"
   "msg/ThermalNodeDataArray.msg"
   "srv/GetSubTopic.srv"
+  "srv/NodeHeatFlow.srv"
 )
 
 rosidl_generate_interfaces(${PROJECT_NAME}

@@ -7,7 +7,7 @@ namespace thermal_control
 {
 
 CoolantManager::CoolantManager()
-: Node("coolant_manager"),
+: Node("internal_coolant"),
   tank_capacity_(90.0),
   ammonia_volume_(90.0),
   ammonia_temp_(-20.0),
@@ -16,7 +16,10 @@ CoolantManager::CoolantManager()
   heater_logged_(false),
   loop_mass_kg_(25.0),
   initial_temperature_(10.0),
-  current_temperature_(15.0)
+  current_temperature_(15.0),
+  control_step_counter_(0),
+  water_acquired_(false),
+  water_request_pending_(false)
 {
   water_client_ = this->create_client<space_station_eclss::srv::CleanWater>("/wpa/dispense_water");
 
@@ -36,12 +39,11 @@ CoolantManager::CoolantManager()
 
   status_pub_ = this->create_publisher<thermal_control::msg::TankStatus>("/tcs/ammonia_status", 10);
 
+  heatflow_server_ = this->create_service<thermal_control::srv::NodeHeatFlow>(
+    "/internal_loop_cooling", std::bind(&CoolantManager::handle_heatflow, this, _1, _2));
+
   control_timer_ = this->create_wall_timer(
     std::chrono::seconds(5), std::bind(&CoolantManager::control_cycle, this));
-
-  
-
-  request_water();  // Initial fill
 }
 
 void CoolantManager::handle_fill_loops(
@@ -56,7 +58,7 @@ void CoolantManager::handle_fill_loops(
 void CoolantManager::request_water()
 {
   if (!water_client_->wait_for_service(std::chrono::seconds(2))) {
-    RCLCPP_WARN(this->get_logger(), "[FILL] Water tank service not available.");
+    RCLCPP_WARN(this->get_logger(), "[FILL] Water service not available.");
     return;
   }
 
@@ -64,24 +66,10 @@ void CoolantManager::request_water()
   req->water = 100.0;
   req->iodine_level = 0.2;
 
-  auto future = water_client_->async_send_request(req);
-  if (rclcpp::spin_until_future_complete(this->get_node_base_interface(), future) ==
-      rclcpp::FutureReturnCode::SUCCESS)
-  {
-    auto resp = future.get();
-    if (resp->success && resp->delivered_volume > 0.0) {
-      publish_timer_ = this->create_wall_timer(
-          std::chrono::seconds(1), std::bind(&CoolantManager::publish_loop_temperatures, this));
-      double half = resp->delivered_volume / 2.0;
-      current_temperature_ += 2.5;
+  water_future_ = water_client_->async_send_request(req);
+  water_request_pending_ = true;
 
-      RCLCPP_INFO(this->get_logger(),
-        "[LOOP FILL] %.2fL received | %.2fL to Loop A | %.2fL to Loop B | Temp: %.2f°C",
-        resp->delivered_volume, half, half, current_temperature_);
-    } else {
-      RCLCPP_WARN(this->get_logger(), "[FILL] Water request failed: %s", resp->message.c_str());
-    }
-  }
+  RCLCPP_INFO(this->get_logger(), "[FILL] Requested 100L clean water...");
 }
 
 void CoolantManager::apply_heat_reduction(
@@ -140,6 +128,27 @@ void CoolantManager::handle_thermal_state_request(
   response->heat_transferred = Q;
 }
 
+void CoolantManager::handle_heatflow(
+  const std::shared_ptr<thermal_control::srv::NodeHeatFlow::Request> request,
+  std::shared_ptr<thermal_control::srv::NodeHeatFlow::Response> response)
+{
+  double avg_temp = request->heat_flow;  // This is actually average temperature
+  const double Cp = 4.186;
+  double deltaT = avg_temp - initial_temperature_;
+  deltaT = std::max(0.0, deltaT);
+
+  double Q = loop_mass_kg_ * 1000.0 * Cp * deltaT;
+  double boosted_heat = Q * 1.2;
+  current_temperature_ = std::max(initial_temperature_, current_temperature_ + boosted_heat / (loop_mass_kg_ * 1000.0 * Cp));
+
+  RCLCPP_INFO(this->get_logger(),
+    "[COOLING SERVICE] Avg Temp=%.2f°C | ΔT=%.2f°C | Heat=%.2f J | Boosted=%.2f J | T=%.2f°C",
+    avg_temp, deltaT, Q, boosted_heat, current_temperature_);
+
+  response->success = true;
+  response->message = "Heat applied to internal loop.";
+}
+
 void CoolantManager::publish_loop_temperatures()
 {
   double loop_a_temp = current_temperature_ + 1.0;
@@ -164,47 +173,62 @@ void CoolantManager::publish_loop_temperatures()
 
 void CoolantManager::control_cycle()
 {
-  // Simulate heat gain in internal loop
-  current_temperature_ += 3.5;
+  control_step_counter_++;
 
-  // Heater hysteresis logic
-  if (ammonia_temp_ < -10.0) {
-    if (!heater_on_) {
-      heater_on_ = true;
-      RCLCPP_INFO(this->get_logger(), "[HEATER] Turning heater ON (%.2f°C)", ammonia_temp_);
-    }
-  } else if (ammonia_temp_ > -5.0) {
-    if (heater_on_) {
-      heater_on_ = false;
-      RCLCPP_INFO(this->get_logger(), "[HEATER] Turning heater OFF (%.2f°C)", ammonia_temp_);
+  if (!water_acquired_ && control_step_counter_ % 5 == 0 && !water_request_pending_) {
+    request_water();
+  }
+
+  if (water_request_pending_) {
+    auto future_status = water_future_.wait_for(std::chrono::seconds(0));
+    if (future_status == std::future_status::ready) {
+      auto resp = water_future_.get();
+      water_request_pending_ = false;
+
+      if (resp->success && resp->delivered_volume > 0.0) {
+        water_acquired_ = true;
+        current_temperature_ += 2.5;
+
+        publish_timer_ = this->create_wall_timer(
+          std::chrono::seconds(1), std::bind(&CoolantManager::publish_loop_temperatures, this));
+
+        RCLCPP_INFO(this->get_logger(),
+          "[LOOP FILL] %.2fL received | Temp: %.2f°C",
+          resp->delivered_volume, current_temperature_);
+      } else {
+        RCLCPP_WARN(this->get_logger(),
+          "[FILL] Water request failed: %s",
+          resp->message.c_str());
+      }
     }
   }
 
-  // While heater is on, increase ammonia temp
+  if (ammonia_temp_ < -10.0 && !heater_on_) {
+    heater_on_ = true;
+    RCLCPP_INFO(this->get_logger(), "[HEATER] Turning ON (%.2f°C)", ammonia_temp_);
+  } else if (ammonia_temp_ > -5.0 && heater_on_) {
+    heater_on_ = false;
+    RCLCPP_INFO(this->get_logger(), "[HEATER] Turning OFF (%.2f°C)", ammonia_temp_);
+  }
+
   if (heater_on_) {
     ammonia_temp_ += 1.5;
-    RCLCPP_DEBUG(this->get_logger(), "[HEATER] Heating ammonia → %.2f°C", ammonia_temp_);
+    RCLCPP_DEBUG(this->get_logger(), "[HEATER] Ammonia: %.2f°C", ammonia_temp_);
   }
 
-  // Update pressure based on ammonia temperature
   ammonia_pressure_ = 101325.0 + (ammonia_temp_ + 20.0) * 1500.0;
 
-  // Publish tank status
-  thermal_control::msg::TankStatus status;
-  status.tank_capacity = tank_capacity_;
-
-  status.tank_temperature.temperature = ammonia_temp_;
-  status.tank_temperature.variance = 0.0;
-  status.tank_temperature.header.stamp = this->now();
-
-  status.tank_pressure.fluid_pressure = ammonia_pressure_;
-  status.tank_pressure.variance = 0.0;
-  status.tank_pressure.header.stamp = this->now();
-
-  status.tank_heater_on = heater_on_;
-  status_pub_->publish(status);
+  thermal_control::msg::TankStatus tank_status;
+  tank_status.tank_capacity = tank_capacity_;
+  tank_status.tank_temperature.temperature = ammonia_temp_;
+  tank_status.tank_temperature.variance = 0.0;
+  tank_status.tank_temperature.header.stamp = this->now();
+  tank_status.tank_pressure.fluid_pressure = ammonia_pressure_;
+  tank_status.tank_pressure.variance = 0.0;
+  tank_status.tank_pressure.header.stamp = this->now();
+  tank_status.tank_heater_on = heater_on_;
+  status_pub_->publish(tank_status);
 }
-
 
 }  // namespace thermal_control
 
