@@ -9,6 +9,15 @@ def generate_launch_description():
     return LaunchDescription([
         Node(
             package='thermal_control',
+            executable='thermal_nodes',
+            name='thermal_network',
+            output='screen',
+            
+            emulate_tty=True
+        ),
+
+        Node(
+            package='thermal_control',
             executable='coolant',
             name='internal_coolant',
             output='screen',
