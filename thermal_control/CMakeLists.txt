@@ -13,13 +13,17 @@ find_package(rosidl_default_generators REQUIRED)
 find_package(std_srvs REQUIRED)
 find_package(space_station_eclss REQUIRED)
 find_package(Bullet REQUIRED)
+find_package(urdf REQUIRED)
+
 # uncomment the following section in order to fill in
 # further dependencies manually.
 # find_package(<dependency> REQUIRED)
 
 include_directories(
   ${BULLET_INCLUDE_DIRS}
+  ${urdf_INCLUDE_DIRS}
 )
+
 
 set(msg_files
 
@@ -57,6 +61,14 @@ add_executable(radiator src/radiators.cpp)
 ament_target_dependencies(radiator rosidl_default_generators rclcpp sensor_msgs space_station_eclss)
 rosidl_target_interfaces(radiator ${PROJECT_NAME} "rosidl_typesupport_cpp")
 
+
+add_executable(thermal_nodes src/thermals_solver.cpp)
+ament_target_dependencies(thermal_nodes rosidl_default_generators rclcpp sensor_msgs space_station_eclss)
+rosidl_target_interfaces(thermal_nodes ${PROJECT_NAME} "rosidl_typesupport_cpp")
+target_link_libraries(thermal_nodes
+  ${urdf_LIBRARIES}
+)
+
 add_executable(demand src/on_demand_publisher.cpp)
 ament_target_dependencies(demand rosidl_default_generators rclcpp sensor_msgs space_station_eclss)
 rosidl_target_interfaces(demand ${PROJECT_NAME} "rosidl_typesupport_cpp")
@@ -79,6 +91,7 @@ install(TARGETS
   coolant
   external_loop
   radiator
+  thermal_nodes
   demand
   sun_vector
   array_absorptivity
