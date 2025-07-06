@@ -108,7 +108,7 @@ void ThermalPlugin::PreUpdate(const UpdateInfo &info,
                       avg_temperature_, avg_internal_power_);
 
   // === Safe async cooling service trigger ===
-  if (!cooling_active_ && avg_temperature_ > 300.0)
+  if (!cooling_active_ && avg_temperature_ > 1300.0)
   {
     if (cooling_service_client_->wait_for_service(1s)) {
       auto req = std::make_shared<thermal_control::srv::NodeHeatFlow::Request>();

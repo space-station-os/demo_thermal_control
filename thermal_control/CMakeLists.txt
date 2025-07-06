@@ -12,11 +12,14 @@ find_package(sensor_msgs REQUIRED)
 find_package(rosidl_default_generators REQUIRED)
 find_package(std_srvs REQUIRED)
 find_package(space_station_eclss REQUIRED)
-
+find_package(Bullet REQUIRED)
 # uncomment the following section in order to fill in
 # further dependencies manually.
 # find_package(<dependency> REQUIRED)
 
+include_directories(
+  ${BULLET_INCLUDE_DIRS}
+)
 
 set(msg_files
 
@@ -32,6 +35,7 @@ set(msg_files
   "msg/ThermalNodeDataArray.msg"
   "srv/GetSubTopic.srv"
   "srv/NodeHeatFlow.srv"
+  "msg/SolarPanelsQ.msg"
 )
 
 rosidl_generate_interfaces(${PROJECT_NAME}
@@ -57,6 +61,15 @@ add_executable(demand src/on_demand_publisher.cpp)
 ament_target_dependencies(demand rosidl_default_generators rclcpp sensor_msgs space_station_eclss)
 rosidl_target_interfaces(demand ${PROJECT_NAME} "rosidl_typesupport_cpp")
 
+add_executable(sun_vector src/sun_vector.cpp)
+ament_target_dependencies(sun_vector rosidl_default_generators rclcpp sensor_msgs space_station_eclss)
+rosidl_target_interfaces(sun_vector ${PROJECT_NAME} "rosidl_typesupport_cpp")
+target_link_libraries(sun_vector ${BULLET_LIBRARIES})
+
+add_executable(array_absorptivity src/solar_heat_node.cpp)
+ament_target_dependencies(array_absorptivity rosidl_default_generators rclcpp sensor_msgs space_station_eclss)
+rosidl_target_interfaces(array_absorptivity ${PROJECT_NAME} "rosidl_typesupport_cpp")
+target_link_libraries(sun_vector ${BULLET_LIBRARIES})
 
 
 include_directories(include)
@@ -67,15 +80,17 @@ install(TARGETS
   external_loop
   radiator
   demand
+  sun_vector
+  array_absorptivity
   DESTINATION lib/${PROJECT_NAME})
 
 install(DIRECTORY launch/
   DESTINATION share/${PROJECT_NAME}/launch
 )
 
-# install(DIRECTORY config/
-#   DESTINATION share/${PROJECT_NAME}/config
-# )
+install(DIRECTORY config/
+   DESTINATION share/${PROJECT_NAME}/config
+ )
 
 
 
