@@ -84,7 +84,7 @@ double ThermalSolverNode::compute_dTdt(const std::string &name,
 
 void ThermalSolverNode::coolingCallback()
 {
-  if (!cooling_active_ && avg_temperature_ > 1300.0) {
+  if (!cooling_active_ && avg_temperature_ > 400.0) {
     if (cooling_client_->wait_for_service(1s)) {
       auto req = std::make_shared<thermal_control::srv::NodeHeatFlow::Request>();
       req->heat_flow = avg_temperature_ - 273.15;
@@ -122,7 +122,9 @@ void ThermalSolverNode::updateSimulation()
   avg_temperature_ = total_temp / thermal_nodes_.size();
   avg_internal_power_ = total_power / thermal_nodes_.size();
 
-  RCLCPP_INFO(this->get_logger(),"Avg temperature of node = %.2f",avg_temperature_);
+  RCLCPP_INFO_THROTTLE(this->get_logger(), *this->get_clock(), 10000, 
+                     "Avg temperature of node = %.2f", avg_temperature_);
+
 
   coolingCallback();
 
