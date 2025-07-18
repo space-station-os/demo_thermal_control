@@ -1,98 +1,24 @@
+# 🌡️ THERMAL CONTROL SYSTEM — *SSOS DEMO MODULE*
 
-# Thermal Control System (TCS)
+## Overview
 
-**`thermal_control/`** is a ROS 2 C++ package that simulates the **Active Thermal Control System** (ATCS) onboard a space station. It models internal water coolant loops, external ammonia loops, radiator venting, and temperature regulation with heat transfer and hysteresis logic.
+This demo implements the **Active Thermal Control System (ATCS)** and **Passive Solar Thermal Modeling** for the HAVEN-2 space station configuration (inspired by VAST). It simulates thermal conduction between spacecraft joints, heat absorption by internal coolant loops, and rejection via radiators (currently visualized via solar array motion).
 
----
-
-##  Features
-
-* Internal coolant loop management with real-time temperature simulation
-* External ammonia heat exchange logic
-* Service-based coolant request and loop temperature reporting
-* Heater control using hysteresis to prevent freezing
-* Radiator venting service with solar panel visual feedback (via joint rotation)
-* Live temperature publishing for dashboard visualization
+> Thermal nodes = spacecraft joints
+> Thermal links = conduction paths between joint-connected links
+> Heat transfer = simulated using physical RK4 integration and control logic
 
 ---
 
-##  Nodes
+##  Installation
 
-### 1. `coolant`
+### Prerequisites
 
-Handles:
+* ROS 2 Humble
+* `colcon`, `tmux`
+* Recommended: Gazebo Harmonic and RViz
 
-* Initial loop fill from ECLSS product water
-* Temperature simulation with heat gain
-* Ammonia coolant tank modeling (temperature, pressure, heater)
-* Heat transfer from external loop
-
-**Publishes:**
-
-* `/tcs/ammonia_status` → `TankStatus`
-* `/tcs/internal_loop_heat` → `InternalLoopStatus`
-
-**Services:**
-
-* `/tcs/fill_loops` → `std_srvs/Trigger`
-* `/tcs/request_ammonia` → `CoolantFlow`
-* `/tcs/loop_a/thermal_state` → `InternalLoop`
-
-**Subscribes:**
-
-* `/tcs/external_loop_a/status` → `ExternalLoopStatus`
-
----
-
-### 2. `external_loop`
-
-Simulates external ammonia loop logic and interaction with the radiator.
-
-**Publishes:**
-
-* `/tcs/external_loop_a/status` → `ExternalLoopStatus`
-
-**Client:**
-
-* Calls `/tcs/request_ammonia` for coolant supply
-
----
-
-### 3. `radiator_controller`
-
-Listens for radiator venting requests and visually rotates solar panel joints.
-
-**Subscribes:**
-
-* N/A
-
-**Publishes:**
-
-* `/solar_controller/commands` → `std_msgs/Float64MultiArray`
-
-**Services:**
-
-* `/tcs/radiator_a/vent_heat` → `VentHeat`
-
----
-
-## 📦 Messages & Services
-
-### Custom Messages
-
-* `TankStatus.msg` – Tank temperature, pressure, heater state
-* `InternalLoopStatus.msg` – Loop A and B temperatures
-* `ExternalLoopStatus.msg` – Inlet/outlet temperatures of external ammonia loop
-
-### Custom Services
-
-* `CoolantFlow.srv` – Request ammonia from tank
-* `InternalLoop.srv` – Query internal loop thermal state
-* `VentHeat.srv` – Trigger radiator venting action
-
----
-
-## 🛠️ How to Build
+### 1. Clone and Build Thermal Control
 
 ### Prerequisites
 
@@ -124,43 +50,90 @@ gz sim
 Assuming you work in ~/ssos_ws, 
 
 ```bash
-cd ~/ssos_ws
-colcon build --packages-select thermal_control
-source install/setup.bash
+mkdir -p ~/ssos_ws/src
+cd ~/ssos_ws/src
+git clone -b v1 https://github.com/space-station-os/demo_thermal_control.git
+cd ..
+colcon build --symlink-install
+```
+
+### 2. Add Required Dependencies
+
+If not already present:
+
+```bash
+cd ~/ssos_ws/src
+git clone --recurse-submodules -b v0.8.4 https://github.com/space-station-os/space_station_os.git
+cd ..
+colcon build --symlink-install
 ```
 
 ---
 
-## 🚀 Running
+##  Launching the Thermal Control Demo
 
-**Launch all nodes manually:**
+This demo consists of:
+
+* A **thermal solver node** that parses joints from the URDF and simulates heat conduction
+* **Coolant control loops** (2 internal, 1 external) that remove heat when thresholds are crossed
+* **Sun vector and solar heat input nodes** for passive solar heating
+
+### 1. Start the Space Station Model
 
 ```bash
-ros2 launch thermal_control thermals.launch.py
+tmux new -s space_station -d "ros2 launch space_station_description display.launch.py"
 ```
 
-# UPDATE 
+### 2. Launch Thermal Network with Internal and External Coolant Loops
 
-add this in bashrc 
+```bash
+tmux new -s thermal_network -d "ros2 launch thermal_control thermals.launch.py"
+```
 
-export GZ_SIM_SYSTEM_PLUGIN_PATH=$GZ_SIM_SYSTEM_PLUGIN_PATH:$HOME/ssos_ws/install/thermal_control/lib
-export GZ_DESCRIPTOR_PATH=$GZ_DESCRIPTOR_PATH:$HOME/ssos_ws/src/demo_thermal_control/thermal_control/plugin/build
+---
 
+##  Sun Vector + Solar Heat Input Nodes
 
+The following nodes simulate **solar flux** based on spacecraft position and orientation, and apply **solar thermal input** to specific panels:
 
+### 3. Launch GNC and Sun Vector System
 
+```bash
+tmux new -s demo1c -d "ros2 run space_station_gnc demo1c_small_incident"
+tmux new -s gnc_core -d "ros2 launch space_station_gnc gnc_core.launch.py"
+tmux new -s sun_nodes -d "ros2 launch thermal_control solar_absorbitivity.launch.py"
+```
 
+### Node Behavior
 
+* **`demo1c_small_incident`** publishes spacecraft position and attitude (used for sun vector calc)
+* **`gnc_core.launch.py`** includes full dynamics and control system nodes
+* **`solar_absorbitivity.launch.py`**:
 
+  * Computes solar incidence angle
+  * Applies solar power as heat input to thermal nodes connected to `lsa_*` and `rsa_*` solar panels
+  * Will later contribute to radiator heating logic and thermal budget in mission control
 
+---
 
+##  System Workflow
 
+1. **Thermal plugin** reads joints as thermal nodes and creates a conduction network between links.
+2. If the **average node temperature** exceeds 1300K:
 
+   * Internal coolant loops (loop A & B) absorb heat from nodes.
+3. When internal loop water reaches a threshold:
 
+   * It calls the **external loop** to reject heat via ammonia and radiator panels.
+4. Radiators are visually animated by rotating solar arrays (to be replaced with heat indicators).(NOTE FOR VISUALIZATION YOU NEED GAZEBO)
+5. **Sun vector and flux** computation simulates solar heating based on orientation.
 
+> This simulates the full Active Thermal Control System like on the ISS, with future plans for heater activation, fault injection, and mission dashboard visualization.
 
+---
 
+## Coming Soon
 
-
+* Integration with **Open MCT** mission control dashboard
 
 

@@ -1,192 +1,230 @@
 #include "thermal_plugin.hh"
+#include <random>
+#include <rclcpp/rclcpp.hpp>
+#include <chrono>
 
+using namespace std::chrono_literals;
 
+namespace gz {
+namespace sim {
+namespace systems {
 
-using namespace spacestation;
-
-ThermalPlugin::ThermalPlugin() {}
-
-void ThermalPlugin::Configure(
-  const gz::sim::Entity &entity,
-  const std::shared_ptr<const sdf::Element> & /*sdf*/,
-  gz::sim::EntityComponentManager &ecm,
-  gz::sim::EventManager & /*eventMgr*/)
+void ThermalPlugin::Configure(const Entity &entity,
+                              const std::shared_ptr<const sdf::Element> & /*sdf*/,
+                              EntityComponentManager &ecm,
+                              EventManager & /*eventMgr*/)
 {
-  gz::sim::Model model(entity);
-  if (!model.Valid(ecm)) {
-    std::cerr << "[ThermalPlugin] Invalid model entity." << std::endl;
-    return;
-  }
+  Model model(entity);
+  this->modelName = model.Name(ecm);
+  RCLCPP_INFO(rclcpp::get_logger("ThermalPlugin"), "Configuring ThermalPlugin for model: %s", modelName.c_str());
 
-  auto links = model.Links(ecm);
-  for (const auto &link : links) {
-    auto name = gz::sim::scopedName(link, ecm, "/", false);
+  std::uniform_real_distribution<double> tempDist(290.0, 310.0);
+  std::uniform_real_distribution<double> capacityDist(500.0, 1500.0);
+  std::uniform_real_distribution<double> powerDist(30.0, 60.0);
+  std::uniform_real_distribution<double> conductanceDist(0.05, 2.0);
 
-    ThermalNode node;
-    node.name = name;
-    node.temperature = 290.0 + static_cast<double>(rand() % 1000) / 100.0;
-    node.heat_capacity = 1000.0;
-    node.internal_power = 0.0;
+  ecm.Each<components::Joint, components::Name, components::ParentLinkName, components::ChildLinkName>(
+    [&](const Entity & /*jointEnt*/,
+        const components::Joint * /*joint*/, const components::Name *name,
+        const components::ParentLinkName *parent,
+        const components::ChildLinkName *child) -> bool
+    {
+      std::string jointName = name->Data();
+      std::string parentLinkName = parent->Data();
+      std::string childLinkName = child->Data();
 
-    node_index_[name] = nodes_.size();
-    nodes_.push_back(node);
-  }
+      if (jointName.empty() || parentLinkName.empty() || childLinkName.empty())
+        return true;
 
-  for (size_t i = 0; i < nodes_.size(); ++i) {
-    for (size_t j = i + 1; j < nodes_.size(); ++j) {
+      ThermalNode node;
+      node.jointName = jointName;
+      node.linkName = jointName;
+      node.temperature = tempDist(rng);
+      node.heatCapacity = capacityDist(rng);
+      node.internalPower = powerDist(rng);
+      this->thermalNodes[jointName] = node;
+
       ThermalLink link;
-      link.from = nodes_[i].name;
-      link.to = nodes_[j].name;
-      link.conductance = 0.05;
-      links_.push_back(link);
-    }
-  }
+      link.from = childLinkName;
+      link.to = parentLinkName;
+      link.conductance = conductanceDist(rng);
+      this->thermalLinks.push_back(link);
 
-  node_pub_ = std::make_shared<gz::transport::Node::Publisher>(
-    gz_node_.Advertise<thermal_controller::ThermalNodeData_V>("/thermal/nodes/state"));
+      RCLCPP_INFO(rclcpp::get_logger("ThermalPlugin"),
+        "Added node: %s (T=%.2f, C=%.2f, P=%.2f) and link: %s -> %s (G=%.2f)",
+        jointName.c_str(), node.temperature, node.heatCapacity, node.internalPower,
+        childLinkName.c_str(), parentLinkName.c_str(), link.conductance);
 
-  link_pub_ = std::make_shared<gz::transport::Node::Publisher>(
-    gz_node_.Advertise<thermal_controller::ThermalLinkFlow_V>("/thermal/links/flux"));
-  
+      return true;
+    });
 
   if (!rclcpp::ok()) {
     int argc = 0;
     char **argv = nullptr;
     rclcpp::init(argc, argv);
   }
+
   ros_node_ = std::make_shared<rclcpp::Node>("thermal_plugin_node");
+  executor_ = std::make_shared<rclcpp::executors::SingleThreadedExecutor>();
+  executor_->add_node(ros_node_);
 
   ros_node_pub_ = ros_node_->create_publisher<thermal_control::msg::ThermalNodeDataArray>(
     "/thermal/nodes/state", 10);
   ros_link_pub_ = ros_node_->create_publisher<thermal_control::msg::ThermalLinkFlowsArray>(
     "/thermal/links/flux", 10);
+  cooling_service_client_ = ros_node_->create_client<thermal_control::srv::NodeHeatFlow>("/internal_loop_cooling");
 
   ros_spin_thread_ = std::thread([this]() {
-      rclcpp::spin(this->ros_node_);
-    });
+    executor_->spin();
+  });
 
-
-  std::cout << "[ThermalPlugin] Configured with " << nodes_.size() << " nodes and " << links_.size() << " links.\n";
+  RCLCPP_INFO(ros_node_->get_logger(), "ThermalPlugin ROS node initialized.");
 }
 
-void ThermalPlugin::rk4_step(double dt)
+void ThermalPlugin::PreUpdate(const UpdateInfo &info,
+                              EntityComponentManager & /*ecm*/)
 {
-  std::vector<double> k1(nodes_.size(), 0.0);
-  std::vector<double> k2(nodes_.size(), 0.0);
-  std::vector<double> k3(nodes_.size(), 0.0);
-  std::vector<double> k4(nodes_.size(), 0.0);
-
-  auto compute_derivative = [&](std::vector<double> &dT, const std::vector<double> &temp) {
-    for (auto &v : dT) v = 0.0;
-
-    for (const auto &link : links_) {
-      size_t i = node_index_[link.from];
-      size_t j = node_index_[link.to];
-      double deltaT = temp[i] - temp[j];
-      double q = link.conductance * deltaT;
-
-      dT[i] -= q / nodes_[i].heat_capacity;
-      dT[j] += q / nodes_[j].heat_capacity;
-    }
-
-    for (size_t i = 0; i < nodes_.size(); ++i)
-      dT[i] += nodes_[i].internal_power / nodes_[i].heat_capacity;
-  };
-
-  std::vector<double> temp0(nodes_.size());
-  for (size_t i = 0; i < nodes_.size(); ++i)
-    temp0[i] = nodes_[i].temperature;
-
-  compute_derivative(k1, temp0);
-  std::vector<double> temp1 = temp0;
-  for (size_t i = 0; i < temp1.size(); ++i)
-    temp1[i] += 0.5 * dt * k1[i];
-
-  compute_derivative(k2, temp1);
-  std::vector<double> temp2 = temp0;
-  for (size_t i = 0; i < temp2.size(); ++i)
-    temp2[i] += 0.5 * dt * k2[i];
-
-  compute_derivative(k3, temp2);
-  std::vector<double> temp3 = temp0;
-  for (size_t i = 0; i < temp3.size(); ++i)
-    temp3[i] += dt * k3[i];
-
-  compute_derivative(k4, temp3);
-
-  for (size_t i = 0; i < nodes_.size(); ++i)
-    nodes_[i].temperature += (dt / 6.0) * (k1[i] + 2 * k2[i] + 2 * k3[i] + k4[i]);
-}
-
-void ThermalPlugin::PreUpdate(
-  const gz::sim::UpdateInfo &info,
-  gz::sim::EntityComponentManager & /*ecm*/)
-{
-  double sim_time = std::chrono::duration<double>(info.simTime).count();
-  if (sim_time - last_time_ < timestep_)
+  if (info.paused)
     return;
 
-  rk4_step(timestep_);
-  last_time_ = sim_time;
+  double dt = std::chrono::duration<double>(info.dt).count() * 5.0;
 
-  // Publish node states
-  thermal_controller::ThermalNodeData_V node_msg;
-  for (const auto &node : nodes_) {
-    auto *entry = node_msg.add_states();
-    entry->set_name(node.name);
-    entry->set_temperature(node.temperature);
-    entry->set_heat_capacity(node.heat_capacity);
-    entry->set_internal_power(node.internal_power);
+  double total_temp = 0.0;
+  double total_power = 0.0;
+  int count = 0;
+
+  for (const auto &[name, node] : this->thermalNodes)
+  {
+    total_temp += node.temperature;
+    total_power += node.internalPower;
+    ++count;
   }
-  node_pub_->Publish(node_msg);
 
-  // Publish heat flow between links
-  thermal_controller::ThermalLinkFlow_V link_msg;
-  for (const auto &link : links_) {
-    size_t i = node_index_[link.from];
-    size_t j = node_index_[link.to];
-    double q = link.conductance * (nodes_[i].temperature - nodes_[j].temperature);
+  avg_temperature_ = total_temp / count;
+  avg_internal_power_ = total_power / count;
 
-    auto *flow = link_msg.add_flows();
-    flow->set_from(link.from);
-    flow->set_to(link.to);
-    flow->set_conductance(link.conductance);
-    flow->set_heat_flow(q);
+  RCLCPP_INFO_THROTTLE(this->ros_node_->get_logger(), *this->ros_node_->get_clock(), 10000,
+                      "Avg Temp: %.2f K | Avg Power: %.2f W",
+                      avg_temperature_, avg_internal_power_);
+
+  // === Safe async cooling service trigger ===
+  if (!cooling_active_ && avg_temperature_ > 1300.0)
+  {
+    if (cooling_service_client_->wait_for_service(1s)) {
+      auto req = std::make_shared<thermal_control::srv::NodeHeatFlow::Request>();
+      req->heat_flow = avg_temperature_ - 273.15;
+
+      cooling_service_client_->async_send_request(req,
+        [this](rclcpp::Client<thermal_control::srv::NodeHeatFlow>::SharedFuture future) {
+          auto result = future.get();
+          if (result->success) {
+            RCLCPP_WARN(this->ros_node_->get_logger(), "Cooling triggered: %s", result->message.c_str());
+            this->cooling_active_ = true;
+          } else {
+            RCLCPP_ERROR(this->ros_node_->get_logger(), "Cooling service call failed: %s", result->message.c_str());
+          }
+        });
+    } else {
+      RCLCPP_WARN(this->ros_node_->get_logger(), "Cooling service unavailable.");
+    }
   }
-  link_pub_->Publish(link_msg);
 
+  // === RK4 Integration ===
+  std::unordered_map<std::string, double> k1, k2, k3, k4, T0;
+  for (const auto &[name, node] : thermalNodes)
+    T0[name] = node.temperature;
 
+  auto compute_dTdt = [&](const std::unordered_map<std::string, double> &temps,
+                          const std::string &name) -> double
+  {
+    const auto &node = thermalNodes[name];
+    double q_total = node.internalPower;
+
+    for (const auto &link : thermalLinks) {
+      if (link.from == name && temps.count(link.to))
+        q_total += link.conductance * (temps.at(link.to) - temps.at(name));
+      else if (link.to == name && temps.count(link.from))
+        q_total += link.conductance * (temps.at(link.from) - temps.at(name));
+    }
+
+    return q_total / node.heatCapacity;
+  };
+
+  for (const auto &[name, node] : thermalNodes)
+    k1[name] = dt * compute_dTdt(T0, name);
+
+  std::unordered_map<std::string, double> T_k2;
+  for (const auto &[name, temp] : T0)
+    T_k2[name] = temp + 0.5 * k1[name];
+
+  for (const auto &[name, node] : thermalNodes)
+    k2[name] = dt * compute_dTdt(T_k2, name);
+
+  std::unordered_map<std::string, double> T_k3;
+  for (const auto &[name, temp] : T0)
+    T_k3[name] = temp + 0.5 * k2[name];
+
+  for (const auto &[name, node] : thermalNodes)
+    k3[name] = dt * compute_dTdt(T_k3, name);
+
+  std::unordered_map<std::string, double> T_k4;
+  for (const auto &[name, temp] : T0)
+    T_k4[name] = temp + k3[name];
+
+  for (const auto &[name, node] : thermalNodes)
+    k4[name] = dt * compute_dTdt(T_k4, name);
+
+  for (auto &[name, node] : thermalNodes)
+    node.temperature += (k1[name] + 2*k2[name] + 2*k3[name] + k4[name]) / 6.0;
+
+  // === Cooling effect ===
+  if (cooling_active_) {
+    bool all_cooled = true;
+    for (auto &[name, node] : thermalNodes) {
+      node.temperature -= cooling_rate_ * dt;
+      if (node.temperature > 310.0)
+        all_cooled = false;
+    }
+
+    if (all_cooled) {
+      cooling_active_ = false;
+      RCLCPP_INFO(ros_node_->get_logger(), "Cooling complete. Returning to normal.");
+    }
+  }
+
+  // === Publish ROS2 messages ===
   thermal_control::msg::ThermalNodeDataArray ros_node_msg;
-  for (const auto &node : nodes_) {
-    thermal_control::msg::ThermalNodeData entry;
-    entry.name = node.name;
-    entry.temperature = node.temperature;
-    entry.heat_capacity = node.heat_capacity;
-    entry.internal_power = node.internal_power;
-    ros_node_msg.nodes.push_back(entry);
+  for (const auto &[name, node] : thermalNodes) {
+    thermal_control::msg::ThermalNodeData msg;
+    msg.name = node.linkName;
+    msg.temperature = node.temperature;
+    msg.heat_capacity = node.heatCapacity;
+    msg.internal_power = node.internalPower;
+    ros_node_msg.nodes.push_back(msg);
   }
   ros_node_pub_->publish(ros_node_msg);
 
   thermal_control::msg::ThermalLinkFlowsArray ros_link_msg;
-  for (const auto &link : links_) {
-    size_t i = node_index_[link.from];
-    size_t j = node_index_[link.to];
-    double q = link.conductance * (nodes_[i].temperature - nodes_[j].temperature);
-
-    thermal_control::msg::ThermalLinkFlows flow;
-    flow.node_a = link.from;
-    flow.node_b = link.to;
-    flow.conductance = link.conductance;
-    flow.heat_flow = q;
-    ros_link_msg.links.push_back(flow);
+  for (const auto &link : thermalLinks) {
+    thermal_control::msg::ThermalLinkFlows msg;
+    msg.node_a = link.from;
+    msg.node_b = link.to;
+    msg.conductance = link.conductance;
+    msg.heat_flow = 0.0;
+    ros_link_msg.links.push_back(msg);
   }
   ros_link_pub_->publish(ros_link_msg);
 
+  RCLCPP_INFO_THROTTLE(ros_node_->get_logger(), *ros_node_->get_clock(), 5000,
+    "RK4 update complete. Published %zu thermal nodes and %zu links.",
+    thermalNodes.size(), thermalLinks.size());
 }
 
-GZ_ADD_PLUGIN(
-  spacestation::ThermalPlugin,
-  gz::sim::System,
-  spacestation::ThermalPlugin::ISystemConfigure,
-  spacestation::ThermalPlugin::ISystemPreUpdate
-)
+GZ_ADD_PLUGIN(ThermalPlugin, System,
+              ThermalPlugin::ISystemConfigure,
+              ThermalPlugin::ISystemPreUpdate)
+GZ_ADD_PLUGIN_ALIAS(ThermalPlugin, "gz::sim::systems::ThermalPlugin")
+
+}  // namespace systems
+}  // namespace sim
+}  // namespace gz

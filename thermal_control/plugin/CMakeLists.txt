@@ -10,6 +10,7 @@ find_package(ament_cmake REQUIRED)
 find_package(rclcpp REQUIRED)
 find_package(sensor_msgs REQUIRED)
 find_package(rosidl_default_generators REQUIRED)
+find_package(std_srvs REQUIRED)
 #find_package(thermal_control REQUIRED)
 set(GZ_MSGS_VER ${gz-msgs10_VERSION_MAJOR})
 
@@ -55,6 +56,7 @@ ament_target_dependencies(ThermalPlugin
   rclcpp
   sensor_msgs
   rosidl_default_runtime
+  std_srvs
   #thermal_control 
 )
 
